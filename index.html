@@ -96,9 +96,53 @@ svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2; s
 .top h1 .icon-btn { margin:-6px 0 -6px -8px }
 
 /* ---------- лента ---------- */
-.feed-head { position:sticky; top:0; z-index:6; height:calc(58px + env(safe-area-inset-top)); padding:env(safe-area-inset-top) 16px 0; display:flex; align-items:center; background:var(--bar); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); transition:transform .25s ease }
+.feed-head { position:sticky; top:0; z-index:6; padding-top:env(safe-area-inset-top); background:var(--bar); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); transition:transform .25s ease }
 .brand { font-size:30px; font-weight:800; letter-spacing:-1.5px; user-select:none; cursor:pointer; line-height:1 }
 .brand span { color:var(--accent) }
+.brand-row { height:58px; display:flex; align-items:center; padding:0 16px }
+.home-tabs { border-bottom:0 }
+.dating-menu { display:flex; gap:8px; padding:4px 16px 12px; overflow-x:auto }
+.dating-menu button { flex:1; padding:8px 12px; border-radius:20px; border:1px solid var(--line); font-weight:600; font-size:14px; color:var(--muted); white-space:nowrap; display:flex; align-items:center; justify-content:center; gap:6px }
+.dating-menu button svg { width:16px; height:16px }
+.dating-menu button:hover { color:var(--text) }
+.dating-menu button.on { background:var(--accent); border-color:var(--accent); color:#fff }
+
+/* знакомства: карточка анкеты */
+.dating-wrap { padding:16px; display:flex; flex-direction:column; align-items:center; gap:14px }
+.dcard { width:100%; max-width:420px; background:var(--panel); border:1px solid var(--line); border-radius:22px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.25); transition:transform .35s ease, opacity .35s ease; touch-action:pan-y; user-select:none; position:relative }
+.dcard.out-left { transform:translateX(-130%) rotate(-14deg); opacity:0 }
+.dcard.out-right { transform:translateX(130%) rotate(14deg); opacity:0 }
+.dcard-photo { height:min(58vh, 525px); display:grid; place-items:center; font-size:110px; font-weight:800; color:#fff; position:relative; cursor:pointer }
+.dcard-photo .ovl { position:absolute; left:0; right:0; bottom:0; padding:70px 18px 16px; background:linear-gradient(transparent, rgba(0,0,0,.78)); color:#fff; text-align:left; font-size:15px; font-weight:500; line-height:1.3 }
+.dname { font-size:26px; font-weight:800; display:flex; align-items:center; gap:8px }
+.dname .verified { width:20px; height:20px }
+.dplace { opacity:.85; margin-top:2px }
+.stamp { position:absolute; top:24px; padding:4px 12px; border:3px solid; border-radius:10px; font-weight:800; font-size:20px; letter-spacing:1px; opacity:0; pointer-events:none }
+.stamp.yes { left:20px; color:#3ecf8e; transform:rotate(-12deg) }
+.stamp.no { right:20px; color:#ff6b6b; transform:rotate(12deg) }
+.dcard-bio { padding:14px 18px 2px; font-size:15px; white-space:pre-wrap; overflow-wrap:anywhere }
+.dcard-btns { display:flex; gap:12px; padding:14px 16px 16px }
+.dbtn { flex:1; padding:13px; border-radius:16px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; font-size:15px }
+.dbtn svg { width:20px; height:20px }
+.dbtn.no { background:var(--panel2); border:1px solid var(--line) }
+.dbtn.no:hover { color:var(--danger) }
+.dbtn.yes { background:var(--accent); color:#fff }
+.dbtn.yes svg { fill:currentColor }
+.dempty { text-align:center; color:var(--muted); padding:40px 20px; max-width:360px }
+.dempty .btn { margin-top:14px }
+/* знакомства: избранное */
+.fav { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--line); cursor:pointer }
+.fav:hover { background:var(--panel2) }
+.fav-bio { color:var(--muted); font-size:14px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere }
+.fav-btns { display:flex; gap:6px; flex-shrink:0 }
+/* знакомства: формы анкеты и фильтров */
+.dform { padding:16px }
+.dpreview { display:flex; gap:12px; align-items:center; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:12px; margin-bottom:8px }
+.row2 { display:flex; gap:10px }
+.row2 > * { flex:1; min-width:0 }
+.check { display:flex; align-items:center; gap:10px; margin:4px 0 14px; font-size:15px; cursor:pointer }
+.check input { width:18px; height:18px; accent-color:var(--accent) }
+[data-device=phone] .fav-btns .btn.small { padding:6px 10px; font-size:13px }
 #vFeed.bars-hidden .feed-head { transform:translateY(-100%) }
 .pill { position:absolute; top:calc(100% + 10px); left:50%; transform:translateX(-50%); white-space:nowrap; background:var(--accent); color:#fff; font-size:14px; font-weight:600; padding:6px 16px; border-radius:20px; box-shadow:0 4px 16px rgba(0,0,0,.4) }
 .fab { position:absolute; right:28px; bottom:28px; z-index:20; width:58px; height:58px; border-radius:50%; background:var(--accent); color:#fff; display:grid; place-items:center; box-shadow:0 6px 22px rgba(91,140,255,.45); transition:transform .25s ease, opacity .25s ease }
@@ -353,7 +397,7 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
 [data-device=phone] #nav { width:auto; flex-direction:row; justify-content:space-around; gap:0; border-right:0; border-top:1px solid var(--line); padding:4px 0 calc(4px + env(safe-area-inset-bottom)) }
 [data-device=phone] .fab { right:16px; bottom:16px; width:54px; height:54px }
 [data-device=phone] .nav-admin { display:none !important } /* кнопка панели — только в версии для ПК */
-[data-device=phone] .feed-head { height:calc(52px + env(safe-area-inset-top)) }
+[data-device=phone] .brand-row { height:50px }
 [data-device=phone] .brand { font-size:26px }
 [data-device=phone] .nav-btn { width:64px; height:48px }
 [data-device=phone] .nav-btn.on { background:none }
@@ -399,7 +443,7 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
 <!-- ================= Приложение ================= -->
 <section id="app" class="hidden">
   <nav id="nav">
-    <button class="nav-btn" data-go="feed" title="Лента">
+    <button class="nav-btn" data-go="feed" title="Главная">
       <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
     </button>
     <button class="nav-btn" data-go="messages" title="Сообщения">
@@ -420,11 +464,25 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
     <section class="view" id="vFeed">
       <div class="col">
         <div class="feed-head">
-          <div class="brand" id="brand" title="Наверх">div<span>y</span></div>
+          <div class="brand-row"><div class="brand" id="brand" title="Наверх">div<span>y</span></div></div>
+          <!-- Главная: режимы «Лента» и «Знакомства» -->
+          <div class="ptabs home-tabs" id="homeTabs">
+            <button data-mode="feed" class="on">Лента</button>
+            <button data-mode="dating">Знакомства</button>
+          </div>
+          <!-- подменю знакомств -->
+          <div class="dating-menu hidden" id="datingMenu">
+            <button data-page="me"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Моя анкета</button>
+            <button data-page="fav"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>Избранное</button>
+            <button data-page="filters"><svg viewBox="0 0 24 24"><path d="M22 3H2l8 9.5V19l4 2v-8.5L22 3z"/></svg>Фильтры</button>
+          </div>
           <button class="pill hidden" id="newPosts"></button>
         </div>
-        <div id="feedList"></div>
-        <div class="loader" id="feedMore"></div>
+        <div id="feedBox">
+          <div id="feedList"></div>
+          <div class="loader" id="feedMore"></div>
+        </div>
+        <div id="datingBox" class="hidden"></div>
       </div>
     </section>
 
@@ -930,7 +988,17 @@ const EN = {
   'Пароль изменён. На других устройствах нужно будет войти заново.': 'Password changed. Other devices will need to log in again.',
   'Показать в профиле': 'Show on profile', 'Скрыть из профиля': 'Hide from profile', 'Вернуть на площадку': 'Return to marketplace',
   'Редактирование': 'Editing', 'Верификация аккаунта': 'Account verification', 'Добавить фото или видео': 'Add photos or videos',
-  'Забыл пароль': 'Forgot password', 'Чаты': 'Chats', 'Чаты сообщества': 'Community chats',
+  'Забыл пароль': 'Forgot password', 'Главная': 'Home', 'Знакомства': 'Dating',
+  'Моя анкета': 'My dating profile', 'Избранное': 'Favorites', 'Фильтры': 'Filters', 'Не интересно': 'Not interested',
+  'Интересно': 'Interested', 'Заполнить анкету': 'Fill in my profile', 'Чтобы смотреть анкеты, заполните свою': 'To see other profiles, fill in yours first',
+  'Анкеты закончились. Измените фильтры или загляните позже': 'No more profiles. Change your filters or check back later',
+  'Изменить фильтры': 'Change filters', 'Обновить': 'Refresh', 'Здесь будут люди, которых вы отметили «Интересно»': 'People you marked “Interested” will appear here',
+  'Имя, фото и описание берутся из профиля.': 'Name, photo and description come from your profile.', 'Изменить в профиле': 'Edit in profile',
+  'Пол': 'Gender', 'Мужской': 'Male', 'Женский': 'Female', 'Возраст': 'Age', 'Возраст (18+)': 'Age (18+)', 'Страна': 'Country', 'Город': 'City',
+  'Показывать мою анкету в знакомствах': 'Show my profile in Dating', 'Кто вам интересен': 'Who you are interested in',
+  'Все': 'Everyone', 'Мужчины': 'Men', 'Женщины': 'Women', 'от': 'from', 'до': 'to', 'Любая': 'Any', 'Любой': 'Any',
+  'укажите пол': 'choose your gender', 'знакомства доступны только с 18 лет': 'Dating is available from age 18 only',
+  'укажите город и страну': 'enter your city and country', 'Чаты': 'Chats', 'Чаты сообщества': 'Community chats',
   'Клиенты пока не писали сообществу': 'No one has written to this community yet', 'Видео обрабатывается…': 'Processing video…',
   'Загрузить новый аватар': 'Upload a new avatar', 'Адрес': 'Handle', 'Передать': 'Give',
   'Адрес: 1–20 символов (латиница, цифры, _)': 'Handle: 1–20 characters (letters, digits, _)',
@@ -980,7 +1048,7 @@ function tr(s) {
   return r == null ? s : s.replace(t, r);
 }
 // пользовательский контент не трогаем
-const NO_TR = '.post-body,.post-name,.prof-name,.prof-bio,.prof-user,.msg,.title,.prev,.comm-desc,.comm-slug,.lot-name,.req-text,.req-links,.chip-name,.brand,.logo,textarea';
+const NO_TR = '.dname,.dplace,.dcard-bio,.fav-bio,.side-head .sub,.post-body,.post-name,.prof-name,.prof-bio,.prof-user,.msg,.title,.prev,.comm-desc,.comm-slug,.lot-name,.req-text,.req-links,.chip-name,.brand,.logo,textarea';
 function translateTree(root) {
   if (root.nodeType === 3) {
     const p = root.parentElement;
@@ -1220,6 +1288,7 @@ function route() {
   else if (a === 'u' && b) showProfile(decodeURIComponent(b));
   else if (a === 'c' && b) showCommunity(decodeURIComponent(b));
   else if (a === 'admin') showAdmin();
+  else if (a === 'dating') showDating(b);
   else if (a === 'inbox' && b) showInbox(Number(b), Number(c3) || 0);
   else showFeed();
 }
@@ -1240,7 +1309,7 @@ function setView(name, navKey) {
 // в сообществе — пост от имени сообщества (только владельцу/админу)
 function updateFab() {
   const fab = $('createBtn');
-  const show = S.view === 'feed'
+  const show = (S.view === 'feed' && D.mode !== 'dating')
     || (S.view === 'profile' && S.profMine && !S.profEditing)
     || (S.view === 'community' && S.comm && !!S.comm.role);
   fab.classList.toggle('hidden', !show);
@@ -1276,6 +1345,7 @@ watchBars($('vCommunity'));
 
 document.querySelectorAll('.nav-btn').forEach(b => b.onclick = () => {
   const target = b.dataset.go;
+  if (target === 'feed' && S.view === 'feed' && D.mode === 'dating') { go('feed'); return; }
   if (target === 'feed' && S.view === 'feed') { // повторное нажатие — наверх и показать новые посты
     if (S.freshCount) showFresh(); else $('vFeed').scrollTo({ top: 0, behavior: 'smooth' });
     return;
@@ -1286,6 +1356,7 @@ document.querySelectorAll('.nav-btn').forEach(b => b.onclick = () => {
 // ================= Лента =================
 function showFeed() {
   setView('feed', 'feed');
+  setHomeMode('feed');
   if (!FEED.loadedOnce) { FEED.loadedOnce = true; loadList(FEED, true); }
 }
 
@@ -1821,6 +1892,296 @@ function onCommunityDeleted(id) {
   if (S.myComms) S.myComms = S.myComms.filter(c => c.id !== id);
   if (S.comms) { S.comms = S.comms.filter(c => c.id !== id); renderCommunities(); }
   if (S.comm && S.comm.id === id) { S.comm = null; if (S.view === 'community') go('feed'); }
+}
+
+// ================= Главная → «Знакомства» =================
+// Карточки анкет: «Не интересно» — карточка уезжает влево, «Интересно» — вправо (лайк + подписка).
+// Подменю: «Моя анкета» (пол, возраст, город, страна; имя/фото/описание — из профиля),
+// «Избранное» (кого отметил «Интересно»), «Фильтры» (кто нравится).
+const D = { mode: 'feed', page: 'cards', me: null, filters: null, loaded: false, cards: [], busy: false, needProfile: false, exhausted: false };
+
+document.querySelectorAll('#homeTabs button').forEach(b => b.onclick = () => go(b.dataset.mode === 'dating' ? 'dating' : 'feed'));
+// повторное нажатие на пункт подменю возвращает к карточкам
+document.querySelectorAll('#datingMenu button').forEach(b => b.onclick = () => go(D.page === b.dataset.page ? 'dating' : 'dating/' + b.dataset.page));
+
+function setHomeMode(mode) {
+  D.mode = mode;
+  document.querySelectorAll('#homeTabs button').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+  $('datingMenu').classList.toggle('hidden', mode !== 'dating');
+  $('feedBox').classList.toggle('hidden', mode !== 'feed');
+  $('datingBox').classList.toggle('hidden', mode !== 'dating');
+  if (mode === 'feed') updateFresh(); else $('newPosts').classList.add('hidden');
+  updateFab();
+}
+
+async function showDating(page) {
+  setView('feed', 'feed');
+  setHomeMode('dating');
+  D.page = ['me', 'fav', 'filters'].includes(page) ? page : 'cards';
+  document.querySelectorAll('#datingMenu button').forEach(b => b.classList.toggle('on', b.dataset.page === D.page));
+  $('vFeed').scrollTop = 0;
+  if (!D.loaded) {
+    $('datingBox').replaceChildren(el('div', 'loader', 'Загрузка…'));
+    try {
+      const r = await api('/api/dating/me');
+      D.me = r.profile; D.filters = r.filters; D.loaded = true;
+    } catch (e) { $('datingBox').replaceChildren(el('div', 'empty', e.message)); return; }
+  }
+  renderDating();
+}
+
+function renderDating() {
+  if (D.mode !== 'dating' || S.view !== 'feed') return;
+  const box = $('datingBox');
+  box.replaceChildren();
+  if (D.page === 'me') renderDatingMe(box);
+  else if (D.page === 'fav') renderDatingFav(box);
+  else if (D.page === 'filters') renderDatingFilters(box);
+  else renderDeck(box);
+}
+
+function resetDeck() { D.cards = []; D.exhausted = false; D.needProfile = false; }
+
+async function fillDeck() {
+  if (D.busy) return;
+  D.busy = true;
+  try {
+    const r = await api('/api/dating/cards?exclude=' + D.cards.map(c => c.id).join(','));
+    D.needProfile = !!r.need_profile;
+    for (const c of r.cards) if (!D.cards.some(x => x.id === c.id)) D.cards.push(c);
+    D.exhausted = !r.cards.length;
+  } catch { D.exhausted = true; }
+  D.busy = false;
+}
+
+function datingEmpty(text, btnText, onClick) {
+  const e = el('div', 'dempty');
+  e.append(el('div', null, text));
+  if (btnText) { const b = el('button', 'btn small', btnText); b.onclick = onClick; e.append(b); }
+  return e;
+}
+
+async function renderDeck(box) {
+  const wrap = el('div', 'dating-wrap');
+  box.append(wrap);
+  if (!D.cards.length && !D.exhausted) {
+    wrap.append(el('div', 'loader', 'Загрузка…'));
+    await fillDeck();
+    if (D.page !== 'cards' || D.mode !== 'dating' || !wrap.isConnected) return;
+    wrap.replaceChildren();
+  }
+  if (D.needProfile) {
+    wrap.append(datingEmpty('Чтобы смотреть анкеты, заполните свою', 'Заполнить анкету', () => go('dating/me')));
+    return;
+  }
+  const c = D.cards[0];
+  if (!c) {
+    const e = datingEmpty('Анкеты закончились. Измените фильтры или загляните позже', 'Изменить фильтры', () => go('dating/filters'));
+    const again = el('button', 'btn small ghost', 'Обновить');
+    again.style.marginLeft = '8px';
+    again.onclick = () => { resetDeck(); renderDating(); };
+    e.append(again);
+    wrap.append(e);
+    return;
+  }
+  wrap.append(cardNode(c));
+  if (D.cards.length < 4 && !D.exhausted) fillDeck(); // подгружаем следующие заранее
+}
+
+function cardNode(c) {
+  const card = el('div', 'dcard');
+  const photo = el('div', 'dcard-photo');
+  setAva(photo, c, false);
+  const ovl = el('div', 'ovl');
+  const nm = el('div', 'dname', c.name + (c.age ? ', ' + c.age : ''));
+  if (c.verified) nm.append(verifiedBadge());
+  ovl.append(nm, el('div', 'dplace', [c.city, c.country].filter(Boolean).join(', ')));
+  const yesStamp = el('div', 'stamp yes', L('ИНТЕРЕСНО', 'LIKE'));
+  const noStamp = el('div', 'stamp no', L('НЕ ИНТЕРЕСНО', 'NOPE'));
+  photo.append(ovl, yesStamp, noStamp);
+  card.append(photo);
+  if (c.bio) card.append(el('div', 'dcard-bio', c.bio));
+  const btns = el('div', 'dcard-btns');
+  const no = el('button', 'dbtn no');
+  no.innerHTML = ICON.cross;
+  no.append('Не интересно');
+  const yes = el('button', 'dbtn yes');
+  yes.innerHTML = ICON.heart;
+  yes.append('Интересно');
+  no.onclick = () => swipeCard(card, c, false);
+  yes.onclick = () => swipeCard(card, c, true);
+  btns.append(no, yes);
+  card.append(btns);
+
+  // карточку можно смахнуть пальцем или мышью
+  let sx = 0, dx = 0, dragging = false;
+  photo.onclick = () => { if (Math.abs(dx) < 6) go('u/' + encodeURIComponent(c.username)); };
+  card.addEventListener('pointerdown', e => {
+    if (e.target.closest('button')) return;
+    dragging = true; sx = e.clientX; dx = 0;
+    card.style.transition = 'none';
+  });
+  card.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    dx = e.clientX - sx;
+    if (Math.abs(dx) > 6 && !card.hasPointerCapture(e.pointerId)) card.setPointerCapture(e.pointerId);
+    card.style.transform = `translateX(${dx}px) rotate(${dx / 20}deg)`;
+    yesStamp.style.opacity = Math.max(0, Math.min(1, dx / 100));
+    noStamp.style.opacity = Math.max(0, Math.min(1, -dx / 100));
+  });
+  const end = () => {
+    if (!dragging) return;
+    dragging = false;
+    card.style.transition = '';
+    card.style.transform = '';
+    if (Math.abs(dx) > 100) swipeCard(card, c, dx > 0);
+    else { yesStamp.style.opacity = noStamp.style.opacity = 0; setTimeout(() => { dx = 0; }, 0); }
+  };
+  card.addEventListener('pointerup', end);
+  card.addEventListener('pointercancel', end);
+  return card;
+}
+
+function swipeCard(card, c, like) {
+  if (card.dataset.gone) return;
+  card.dataset.gone = '1';
+  card.classList.add(like ? 'out-right' : 'out-left');
+  D.cards = D.cards.filter(x => x.id !== c.id);
+  api('/api/dating/swipe', { method: 'POST', body: { user_id: c.id, like } }).catch(e => alert(e.message));
+  setTimeout(() => { if (D.page === 'cards') renderDating(); }, 330);
+}
+
+async function renderDatingFav(box) {
+  box.append(el('div', 'loader', 'Загрузка…'));
+  try {
+    const list = await api('/api/dating/favorites');
+    if (D.page !== 'fav' || D.mode !== 'dating') return;
+    box.replaceChildren();
+    if (!list.length) box.append(el('div', 'empty', 'Здесь будут люди, которых вы отметили «Интересно»'));
+    for (const u of list) box.append(favNode(u));
+  } catch (e) { box.replaceChildren(el('div', 'empty', e.message)); }
+}
+
+// строка избранного: нажали на неё — профиль; справа «Написать» и «Не интересно»
+function favNode(u) {
+  const it = el('div', 'fav');
+  const ava = el('div', 'ava');
+  setAva(ava, u, false);
+  const meta = el('div', 'meta');
+  const nm = el('div', 'title', u.name + (u.age ? ', ' + u.age : ''));
+  meta.append(nm, el('div', 'fav-bio', u.bio || [u.city, u.country].filter(Boolean).join(', ') || '@' + u.username));
+  const btns = el('div', 'fav-btns');
+  const write = el('button', 'btn small', 'Написать');
+  write.onclick = e => { e.stopPropagation(); startChat(u.id); };
+  const no = el('button', 'btn small ghost', 'Не интересно');
+  no.onclick = async e => {
+    e.stopPropagation();
+    no.disabled = true;
+    try {
+      await api('/api/dating/unlike', { method: 'POST', body: { user_id: u.id } });
+      it.remove();
+      if (!$('datingBox').querySelector('.fav')) renderDating();
+    } catch (err) { alert(err.message); no.disabled = false; }
+  };
+  btns.append(write, no);
+  it.append(ava, meta, btns);
+  it.onclick = () => go('u/' + encodeURIComponent(u.username));
+  return it;
+}
+
+// сегмент-переключатель для форм знакомств
+function segControl(options, value) {
+  const seg = el('div', 'seg');
+  seg.value = value;
+  for (const [v, label] of options) {
+    const b = el('button', v === value ? 'on' : '', label);
+    b.type = 'button';
+    b.onclick = () => { seg.value = v; [...seg.children].forEach(x => x.classList.toggle('on', x === b)); };
+    seg.append(b);
+  }
+  return seg;
+}
+function fieldInput(value, placeholder, type = 'text') {
+  const i = el('input', 'field');
+  i.type = type; i.value = value ?? ''; i.placeholder = placeholder;
+  return i;
+}
+
+function renderDatingMe(box) {
+  const p = D.me || { gender: '', age: '', city: '', country: '', active: true };
+  const form = el('div', 'dform');
+  // имя, фото и описание — из профиля
+  const pv = el('div', 'dpreview');
+  const a = el('div', 'ava');
+  setAva(a, S.me, false);
+  const m = el('div', 'meta');
+  m.append(el('div', 'title', S.me.name), el('div', 'fav-bio', S.me.bio || L('Описание не заполнено', 'No description yet')));
+  pv.append(a, m);
+  const toProfile = el('button', 'link-btn', 'Изменить в профиле');
+  toProfile.type = 'button';
+  toProfile.onclick = () => go('u/' + encodeURIComponent(S.me.username));
+  const gender = segControl([['male', 'Мужской'], ['female', 'Женский']], p.gender);
+  const age = fieldInput(p.age || '', 'Возраст (18+)', 'number');
+  age.min = 18; age.max = 100;
+  const country = fieldInput(p.country, 'Страна');
+  const city = fieldInput(p.city, 'Город');
+  const row = el('div', 'row2');
+  const c1 = el('div'), c2 = el('div');
+  c1.append(el('div', 'field-label', 'Страна'), country);
+  c2.append(el('div', 'field-label', 'Город'), city);
+  row.append(c1, c2);
+  const activeBox = el('label', 'check');
+  const active = document.createElement('input');
+  active.type = 'checkbox'; active.checked = p.active !== false;
+  activeBox.append(active, el('span', null, 'Показывать мою анкету в знакомствах'));
+  const err = el('div', 'err');
+  const save = el('button', 'btn', 'Сохранить');
+  save.onclick = async () => {
+    save.disabled = true;
+    err.textContent = '';
+    try {
+      D.me = await api('/api/dating/me', { method: 'POST', body: {
+        gender: gender.value, age: Number(age.value) || 0, city: city.value.trim(), country: country.value.trim(), active: active.checked } });
+      resetDeck();
+      go('dating');
+    } catch (e) { err.textContent = e.message; save.disabled = false; }
+  };
+  form.append(pv, el('div', 'hint', 'Имя, фото и описание берутся из профиля.'), toProfile,
+    el('div', 'field-label', 'Пол'), gender, el('div', 'field-label', 'Возраст'), age, row, activeBox, save, err);
+  box.append(form);
+}
+
+function renderDatingFilters(box) {
+  const f = D.filters || { gender: 'any', age_min: 18, age_max: 100, city: '', country: '' };
+  const form = el('div', 'dform');
+  const gender = segControl([['any', 'Все'], ['male', 'Мужчины'], ['female', 'Женщины']], f.gender);
+  const from = fieldInput(f.age_min, 'от', 'number');
+  const to = fieldInput(f.age_max, 'до', 'number');
+  from.min = to.min = 18; from.max = to.max = 100;
+  const ages = el('div', 'row2');
+  ages.append(from, to);
+  const country = fieldInput(f.country, 'Любая');
+  const city = fieldInput(f.city, 'Любой');
+  const row = el('div', 'row2');
+  const c1 = el('div'), c2 = el('div');
+  c1.append(el('div', 'field-label', 'Страна'), country);
+  c2.append(el('div', 'field-label', 'Город'), city);
+  row.append(c1, c2);
+  const err = el('div', 'err');
+  const save = el('button', 'btn', 'Сохранить');
+  save.onclick = async () => {
+    save.disabled = true;
+    err.textContent = '';
+    try {
+      D.filters = await api('/api/dating/filters', { method: 'POST', body: {
+        gender: gender.value, age_min: Number(from.value) || 18, age_max: Number(to.value) || 100,
+        city: city.value.trim(), country: country.value.trim() } });
+      resetDeck();
+      go('dating');
+    } catch (e) { err.textContent = e.message; save.disabled = false; }
+  };
+  form.append(el('div', 'field-label', 'Кто вам интересен'), gender, el('div', 'field-label', 'Возраст'), ages, row, save, err);
+  box.append(form);
 }
 
 // ================= Профиль =================
