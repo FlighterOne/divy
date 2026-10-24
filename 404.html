@@ -212,6 +212,7 @@ svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2; s
 .act.com:hover, .act.share:hover { color:var(--accent); background:rgba(91,140,255,.1) }
 .act.rep:hover { color:var(--ok); background:rgba(62,207,142,.1) }
 .act.rep.on { color:var(--ok) }
+.act.rep svg { transform:rotate(90deg) } /* значок репоста — вертикальный */
 .act.share { margin-left:auto }
 /* комментарии под постом */
 .comments { margin-top:6px; border-top:1px solid var(--line); padding:8px 0 4px }
@@ -1930,7 +1931,8 @@ function postNode(p) {
   com.innerHTML = ICON.comment;
   com.append(el('span', 'n'));
   com.onclick = () => toggleComments(art, p);
-  acts.append(like, com);
+  // порядок: лайк, репост, комментарии … справа «Поделиться»
+  acts.append(like);
   if (!(p.author.id === S.me.id && !p.community)) { // свой личный пост репостить не нужно — он и так в профиле
     const rp = el('button', 'act rep');
     rp.innerHTML = ICON.repost;
@@ -1938,6 +1940,7 @@ function postNode(p) {
     rp.onclick = () => toggleRepost(p.id);
     acts.append(rp);
   }
+  acts.append(com);
   const share = el('button', 'act share');
   share.title = 'Поделиться';
   share.innerHTML = ICON.share;
