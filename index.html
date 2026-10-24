@@ -221,6 +221,23 @@ svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2; s
 .verified.ghost { background:none; border:1.5px dashed var(--muted); color:var(--muted); opacity:.55; cursor:pointer; font-size:12px; font-weight:800; line-height:1 }
 .prof-name .verified.ghost { font-size:13px }
 .verified.ghost:hover { opacity:1; border-color:var(--accent); color:var(--accent) }
+/* аватары-картинки и их загрузка */
+.ava.img { color:transparent }
+.ava-edit { position:relative; width:92px; height:92px; margin:6px 0 16px }
+.ava-edit .ava { cursor:pointer; transition:opacity .2s }
+.ava-edit.busy .ava { opacity:.45 }
+.ava-cam { position:absolute; right:-4px; bottom:-4px; width:36px; height:36px; border-radius:50%; background:var(--accent); color:#fff; display:grid; place-items:center; border:3px solid var(--bg); cursor:pointer }
+.ava-cam svg { width:18px; height:18px }
+.ava-cam:hover { filter:brightness(1.1) }
+/* бейдж непрочитанного на кнопке «Чаты» сообщества */
+.btn-badge { display:inline-block; margin-left:6px; min-width:18px; padding:0 5px; height:18px; line-height:18px; border-radius:9px; background:var(--danger); color:#fff; font-size:11px; font-weight:700; text-align:center }
+/* шапка списка чатов в режиме «Чаты сообщества» */
+.side-head { display:flex; align-items:center; gap:6px }
+.side-head .icon-btn { margin-left:-8px }
+.side-head .sub { color:var(--muted); font-size:13px; font-weight:500 }
+/* видео, которое ещё перекодируется */
+.car-proc { width:100%; height:100%; display:grid; place-items:center; color:#fff; font-size:14px; background:#111; text-align:center; padding:12px }
+
 /* настройки */
 .set-row { width:100%; display:flex; align-items:center; gap:12px; padding:14px 12px; border-radius:12px; text-align:left; font-weight:600; font-size:15px }
 .set-row:hover { background:var(--panel2) }
@@ -419,7 +436,7 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
     <!-- Сообщения (директ) -->
     <section class="view" id="vMessages">
       <aside id="side">
-        <div class="side-head">Сообщения</div>
+        <div class="side-head" id="sideHead">Сообщения</div>
         <input class="field search" id="search" placeholder="Найти по логину или имени" autocomplete="off" autocapitalize="off" spellcheck="false">
         <div id="list"></div>
       </aside>
@@ -720,6 +737,17 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
   </div>
 </div>
 
+<!-- Универсальное окно выбора (например, какой юзернейм передать сообществу) -->
+<div class="modal hidden" id="pickModal">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="icon-btn" id="pickClose" title="Закрыть"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      <span id="pickTitle"></span>
+    </div>
+    <div class="sheet-body" id="pickBody"></div>
+  </div>
+</div>
+
 <!-- Окно создания сообщества -->
 <div class="modal hidden" id="commModal">
   <div class="sheet">
@@ -765,6 +793,7 @@ const ICON = {
   heart: '<svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>',
   eye: '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
   eyeOff: '<svg viewBox="0 0 24 24"><path d="M17.9 17.9A10 10 0 0 1 12 20C5 20 1 12 1 12a18 18 0 0 1 5.1-5.9M9.9 4.2A9 9 0 0 1 12 4c7 0 11 8 11 8a18 18 0 0 1-2.2 3.2M14.1 14.1a3 3 0 1 1-4.2-4.2"/><path d="M1 1l22 22"/></svg>',
+  camera: '<svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
   cross: '<svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>',
   trash: '<svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>',
 };
@@ -901,7 +930,22 @@ const EN = {
   'Пароль изменён. На других устройствах нужно будет войти заново.': 'Password changed. Other devices will need to log in again.',
   'Показать в профиле': 'Show on profile', 'Скрыть из профиля': 'Hide from profile', 'Вернуть на площадку': 'Return to marketplace',
   'Редактирование': 'Editing', 'Верификация аккаунта': 'Account verification', 'Добавить фото или видео': 'Add photos or videos',
-  'Забыл пароль': 'Forgot password', 'Юзернейм': 'Username', 'Почта для восстановления': 'Recovery email', 'Переключить тему': 'Switch theme',
+  'Забыл пароль': 'Forgot password', 'Чаты': 'Chats', 'Чаты сообщества': 'Community chats',
+  'Клиенты пока не писали сообществу': 'No one has written to this community yet', 'Видео обрабатывается…': 'Processing video…',
+  'Загрузить новый аватар': 'Upload a new avatar', 'Адрес': 'Handle', 'Передать': 'Give',
+  'Адрес: 1–20 символов (латиница, цифры, _)': 'Handle: 1–20 characters (letters, digits, _)',
+  'Адрес: 5–20 символов (латиница, цифры, _)': 'Handle: 5–20 characters (letters, digits, _)',
+  'Добавить юзернейм сообществу': 'Add a username to the community',
+  'Передайте сообществу один из своих дополнительных юзернеймов или получите новый на площадке.': 'Give the community one of your extra usernames or get a new one on the marketplace.',
+  'У вас нет дополнительных юзернеймов': "You don't have extra usernames", 'Открыть площадку юзернеймов': 'Open the username marketplace',
+  'это ваше сообщество — переписка с клиентами в разделе «Чаты»': 'this is your community — client conversations are in “Chats”',
+  'нет доступа к чатам сообщества': "you don't have access to this community's chats",
+  'это может только владелец сообщества': 'only the community owner can do this',
+  'у сообщества уже максимум — 3 дополнительных юзернейма': 'the community already has the maximum of 3 extra usernames',
+  'такой адрес уже у другого сообщества': 'another community already has this handle',
+  'адрес: 1–20 символов, латиница, цифры и _': 'handle: 1–20 characters, letters, digits and _',
+  'менять аватар может только владелец': 'only the owner can change the avatar', 'фото слишком большое': 'the photo is too large',
+  'нужно фото (JPG, PNG, WEBP)': 'a photo is required (JPG, PNG, WEBP)', 'не удалось прочитать фото': "couldn't read the photo", 'Юзернейм': 'Username', 'Почта для восстановления': 'Recovery email', 'Переключить тему': 'Switch theme',
   'На эту почту придёт код, если вы забудете пароль. Её никто не видит.': "We'll send a code to this email if you forget your password. Nobody else can see it.",
   'Почта': 'Email', 'Почта сохранена': 'Email saved', 'Почта отвязана': 'Email removed',
   'Восстановление пароля': 'Password recovery',
@@ -1014,9 +1058,67 @@ function lastSeenText(u) {
 
 const COLORS = ['#e17076', '#7bc862', '#e5ca77', '#65aadd', '#a695e7', '#ee7aae', '#6ec9cb', '#faa774'];
 function setAva(node, u, online) {
-  node.textContent = ((u.name || u.username || '?').trim()[0] || '?').toUpperCase();
-  node.style.background = COLORS[u.id % COLORS.length];
+  const img = u.avatar ? SERVER + u.avatar : '';
+  node.textContent = img ? '' : ((u.name || u.username || '?').trim()[0] || '?').toUpperCase();
+  node.style.background = img ? `center / cover no-repeat url("${img}")` : COLORS[u.id % COLORS.length];
+  node.classList.toggle('img', !!img);
   node.classList.toggle('on', !!online);
+}
+
+// Фото → квадрат size×size JPEG (браузер сам учитывает поворот снимка с телефона)
+async function squareJpeg(file, size) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => {
+      const i = new Image();
+      i.onload = () => res(i);
+      i.onerror = () => rej(new Error(L('Не удалось открыть фото', 'Could not open the photo')));
+      i.src = url;
+    });
+    const side = Math.min(img.naturalWidth, img.naturalHeight);
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    c.getContext('2d').drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, size, size);
+    return await new Promise(res => c.toBlob(res, 'image/jpeg', 0.88));
+  } finally { URL.revokeObjectURL(url); }
+}
+
+async function uploadAvatar(path, blob) {
+  const fd = new FormData();
+  fd.append('file', blob, 'avatar.jpg');
+  const res = await fetch(SERVER + path, { method: 'POST', headers: { Authorization: 'Bearer ' + S.token }, body: fd });
+  const d = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(d.error || 'Ошибка ' + res.status);
+  return d.avatar;
+}
+
+// Круг с аватаром и кнопкой-камерой: нажали — выбрали фото — оно сразу становится аватаром
+function avatarEditor(target, square, path, onUploaded) {
+  const wrap = el('div', 'ava-edit');
+  const ava = el('div', 'ava big' + (square ? ' sq' : ''));
+  setAva(ava, target, false);
+  const cam = el('button', 'ava-cam');
+  cam.type = 'button';
+  cam.title = 'Загрузить новый аватар';
+  cam.innerHTML = ICON.camera;
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = 'image/*'; input.hidden = true;
+  cam.onclick = ava.onclick = () => input.click();
+  input.onchange = async () => {
+    const file = input.files[0];
+    input.value = '';
+    if (!file) return;
+    wrap.classList.add('busy');
+    try {
+      const url = await uploadAvatar(path, await squareJpeg(file, 512));
+      target.avatar = url;
+      setAva(ava, target, false);
+      onUploaded(url);
+    } catch (e) { alert(e.message); }
+    wrap.classList.remove('busy');
+  };
+  wrap.append(ava, cam, input);
+  return wrap;
 }
 function autosize(t, max) { t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, max) + 'px'; }
 
@@ -1113,11 +1215,12 @@ addEventListener('hashchange', () => { navDepth++; route(); });
 
 function route() {
   if (!S.me) return;
-  const [a, b] = location.hash.replace(/^#\/?/, '').split('/');
+  const [a, b, c3] = location.hash.replace(/^#\/?/, '').split('/');
   if (a === 'messages') showMessages(b ? Number(b) : 0);
   else if (a === 'u' && b) showProfile(decodeURIComponent(b));
   else if (a === 'c' && b) showCommunity(decodeURIComponent(b));
   else if (a === 'admin') showAdmin();
+  else if (a === 'inbox' && b) showInbox(Number(b), Number(c3) || 0);
   else showFeed();
 }
 
@@ -1249,7 +1352,7 @@ function setPostAs(c) {
   S.postAs = c;
   setAsTab(c ? 'community' : 'user');
   const ava = $('postAva');
-  setAva(ava, c ? { id: c.id, name: c.name } : S.me, false);
+  setAva(ava, c ? { id: c.id, name: c.name, avatar: c.avatar } : S.me, false);
   ava.classList.toggle('sq', !!c);
   $('postInput').placeholder = c ? L(`Пост от имени «${c.name}»`, `Post as “${c.name}”`) : L('Что нового?', "What's new?");
   if (c) {
@@ -1270,7 +1373,7 @@ function renderAsList() {
   for (const c of list) {
     const it = el('button', 'as-item' + (S.postAs && S.postAs.id === c.id ? ' on' : ''));
     const a = el('div', 'ava');
-    setAva(a, { id: c.id, name: c.name }, false);
+    setAva(a, { id: c.id, name: c.name, avatar: c.avatar }, false);
     it.append(a, el('span', null, c.name));
     it.onclick = () => setPostAs(c);
     box.append(it);
@@ -1438,6 +1541,23 @@ function clearAttach() {
   renderAttach();
 }
 
+// Плеер видео: обложка вместо предзагрузки — лента не качает видео, пока его не включили
+function videoEl(m) {
+  const v = document.createElement('video');
+  v.controls = true;
+  v.playsInline = true;
+  v.preload = m.poster ? 'none' : 'metadata';
+  if (m.poster) v.poster = SERVER + m.poster;
+  v.src = SERVER + m.url;
+  return v;
+}
+
+// Видео перекодировано — меняем заглушки «обрабатывается» на плеер
+function onMediaReady(m) {
+  for (const p of S.posts.values()) for (const x of p.media || []) if (x.id === m.id) Object.assign(x, m, { processing: false });
+  document.querySelectorAll(`.car-proc[data-media="${m.id}"]`).forEach(n => n.replaceWith(videoEl(m)));
+}
+
 // --- карусель фото/видео в посте: по кругу (после последнего — снова первое) ---
 function carousel(media) {
   const wrap = el('div', 'car');
@@ -1449,9 +1569,13 @@ function carousel(media) {
   setRatio(media[0].w, media[0].h); // форма карусели — по первому (титульному) материалу
   media.forEach((m, k) => {
     const slide = el('div', 'car-slide');
-    if (m.kind === 'video') {
-      const v = document.createElement('video');
-      v.src = SERVER + m.url; v.controls = true; v.playsInline = true; v.preload = 'metadata';
+    if (m.kind === 'video' && m.processing) {
+      // сервер ещё перекодирует видео; когда будет готово, придёт событие «media» и заглушка заменится плеером
+      const ph = el('div', 'car-proc', 'Видео обрабатывается…');
+      ph.dataset.media = m.id;
+      slide.append(ph);
+    } else if (m.kind === 'video') {
+      const v = videoEl(m);
       if (k === 0 && !m.w) v.addEventListener('loadedmetadata', () => setRatio(v.videoWidth, v.videoHeight), { once: true });
       slide.append(v);
     } else {
@@ -1493,15 +1617,20 @@ function carousel(media) {
     let sx = 0, sy = 0, dx = 0, axis = '';
     wrap.addEventListener('touchstart', e => {
       sx = e.touches[0].clientX; sy = e.touches[0].clientY; dx = 0; axis = '';
+      // палец на полосе перемотки видео — это перемотка, а не листание карусели
+      const t = e.target;
+      if (t.tagName === 'VIDEO' && sy > t.getBoundingClientRect().bottom - 64) { axis = 'skip'; return; }
       track.style.transition = 'none';
     }, { passive: true });
     wrap.addEventListener('touchmove', e => {
       const x = e.touches[0].clientX - sx, y = e.touches[0].clientY - sy;
+      if (axis === 'skip') return;
       if (!axis && (Math.abs(x) > 8 || Math.abs(y) > 8)) axis = Math.abs(x) > Math.abs(y) ? 'x' : 'y';
       if (axis === 'x') { dx = x; track.style.transform = `translateX(calc(${-100 * i}% + ${dx}px))`; }
     }, { passive: true });
     wrap.addEventListener('touchend', () => {
       track.style.transition = '';
+      if (axis === 'skip') return;
       if (axis === 'x' && Math.abs(dx) > 40) show(i + (dx < 0 ? 1 : -1));
       else show(i);
     });
@@ -1587,8 +1716,8 @@ function postNode(p) {
   art.dataset.post = p.id;
   // пост сообщества показываем от имени сообщества, а не автора
   const c = p.community;
-  const who = c ? { id: c.id, name: c.name, handle: c.slug, verified: c.verified }
-                : { id: p.author.id, name: p.author.name, handle: p.author.username, verified: p.author.verified };
+  const who = c ? { id: c.id, name: c.name, handle: c.slug, verified: c.verified, avatar: c.avatar }
+                : { id: p.author.id, name: p.author.name, handle: p.author.username, verified: p.author.verified, avatar: p.author.avatar };
   const openAuthor = () => go((c ? 'c/' : 'u/') + encodeURIComponent(who.handle));
   const ava = el('div', 'ava' + (c ? ' sq' : ''));
   setAva(ava, who, false);
@@ -1767,7 +1896,7 @@ function renderCommunities() {
 function commNode(c) {
   const it = el('div', 'comm');
   const ava = el('div', 'ava');
-  setAva(ava, { id: c.id, name: c.name }, false);
+  setAva(ava, { id: c.id, name: c.name, avatar: c.avatar }, false);
   const meta = el('div', 'meta');
   const name = el('div', 'comm-name');
   name.append(el('span', 'title', c.name));
@@ -1813,18 +1942,30 @@ function renderCommunity() {
   box.replaceChildren();
   const top = el('div', 'prof-top');
   const ava = el('div', 'ava big sq');
-  setAva(ava, { id: c.id, name: c.name }, false);
+  setAva(ava, { id: c.id, name: c.name, avatar: c.avatar }, false);
   const btns = el('div', 'prof-btns');
-  if (c.role === 'owner') { // владелец видит управление вместо подписки
+  const chatsBtn = () => { // переписка сообщества с клиентами
+    const b = el('button', 'btn small ghost', 'Чаты');
+    if (c.inbox_unread) b.append(el('span', 'btn-badge', c.inbox_unread > 99 ? '99+' : c.inbox_unread));
+    b.onclick = () => go('inbox/' + c.id);
+    return b;
+  };
+  if (c.role === 'owner') { // владелец: «Редактировать», рядом «Чаты», «Удалить»
     const edit = el('button', 'btn small ghost', 'Редактировать');
     edit.onclick = editCommunity;
-    btns.append(edit);
+    btns.append(edit, chatsBtn());
     if (!c.official) {
       const del = el('button', 'btn small ghost danger', 'Удалить');
       del.onclick = deleteCommunity;
       btns.append(del);
     }
   } else {
+    if (c.role) btns.append(chatsBtn()); // админ сообщества тоже отвечает клиентам
+    else {
+      const write = el('button', 'btn small ghost', 'Написать');
+      write.onclick = () => writeToCommunity(c);
+      btns.append(write);
+    }
     const fol = el('button', 'btn small' + (c.i_follow ? ' ghost' : ''), c.i_follow ? 'Вы подписаны' : 'Подписаться');
     fol.onclick = () => toggleCommFollow(fol);
     btns.append(fol);
@@ -1834,6 +1975,7 @@ function renderCommunity() {
   if (c.verified) name.append(verifiedBadge());
   box.append(top, name, el('div', 'prof-user', '@' + c.slug
     + (c.role === 'owner' ? L(' · вы владелец', ' · you are the owner') : c.role === 'admin' ? L(' · вы администратор', ' · you are an admin') : '')));
+  if (c.usernames && c.usernames.length) box.append(el('div', 'extra-names', L('также ', 'also ') + c.usernames.map(x => '@' + x).join(', ')));
   if (c.description) box.append(el('div', 'prof-bio', c.description));
   const stats = el('div', 'prof-stats');
   const stat = (n, forms) => { const s = el('span'); s.append(el('b', null, n), ' ' + plural(n, forms)); return s; };
@@ -1843,26 +1985,65 @@ function renderCommunity() {
   box.append(stats);
 }
 
+// Клиент пишет сообществу: открываем (или создаём) чат с ним в «Сообщениях»
+async function writeToCommunity(c) {
+  try {
+    const chat = await api('/api/community/chat', { method: 'POST', body: { id: c.id } });
+    if (!S.chats.has(chat.id)) { chat._t = Date.now(); S.chats.set(chat.id, chat); }
+    go('messages/' + chat.id);
+  } catch (e) { alert(e.message); }
+}
+
+// Редактирование сообщества: аватар сверху, название, описание, внизу — адрес и доп. юзернеймы
 function editCommunity() {
   const c = S.comm, box = $('commHead');
   box.replaceChildren();
+  const syncLists = patch => {
+    for (const list of [S.comms, S.myComms]) {
+      const x = list && list.find(x => x.id === c.id);
+      if (x) Object.assign(x, patch);
+    }
+  };
+  const avaEd = avatarEditor({ id: c.id, name: c.name, avatar: c.avatar }, true, '/api/community/avatar?id=' + c.id, url => {
+    c.avatar = url;
+    syncLists({ avatar: url });
+  });
   const name = el('input', 'field');
   name.value = c.name; name.maxLength = 64; name.placeholder = 'Название';
   const desc = el('textarea', 'field');
   desc.value = c.description || ''; desc.maxLength = 300; desc.rows = 3; desc.placeholder = 'Описание';
+  const slug = el('input', 'field');
+  slug.value = c.slug; slug.maxLength = 21;
+  slug.placeholder = c.official ? 'Адрес: 1–20 символов (латиница, цифры, _)' : 'Адрес: 5–20 символов (латиница, цифры, _)';
+  slug.autocapitalize = 'off'; slug.spellcheck = false; slug.autocomplete = 'off';
+  const chips = el('div');
+  const commChips = { vis: '/api/community/usernames/visibility', rel: '/api/community/usernames/release', extra: { id: c.id } };
+  const paintChips = () => {
+    chips.replaceChildren();
+    if (c.my_usernames && c.my_usernames.length) chips.append(el('div', 'field-label', 'Дополнительные юзернеймы'), usernameChips(c, commChips));
+  };
+  paintChips();
+  const more = el('button', 'link-btn', '+ Добавить ещё один юзернейм');
+  more.type = 'button';
+  more.onclick = () => openTransferPicker(c, paintChips);
   const err = el('div', 'err');
   const save = el('button', 'btn small', 'Сохранить');
   const cancel = el('button', 'btn small ghost', 'Отмена');
   cancel.onclick = renderCommunity;
   save.onclick = async () => {
     save.disabled = true;
+    err.textContent = '';
     try {
+      const newSlug = slug.value.trim().replace(/^@/, '');
+      if (newSlug !== c.slug) {
+        const r = await api('/api/community/slug', { method: 'POST', body: { id: c.id, slug: newSlug } });
+        c.slug = r.slug;
+        syncLists({ slug: r.slug });
+        history.replaceState(null, '', '#/c/' + encodeURIComponent(r.slug)); // ссылка на сообщество меняется
+      }
       const r = await api('/api/community/update', { method: 'POST', body: { id: c.id, name: name.value.trim(), description: desc.value.trim() } });
       c.name = r.name; c.description = r.description;
-      for (const list of [S.comms, S.myComms]) {
-        const x = list && list.find(x => x.id === c.id);
-        if (x) { x.name = r.name; x.description = r.description; }
-      }
+      syncLists({ name: r.name, description: r.description });
       if (S.comms) renderCommunities();
       renderCommunity();
     } catch (e) { err.textContent = e.message; save.disabled = false; }
@@ -1870,8 +2051,56 @@ function editCommunity() {
   const row = el('div', 'prof-btns');
   row.style.justifyContent = 'flex-start';
   row.append(save, cancel);
-  box.append(el('div', 'prof-name', L('Редактирование', 'Editing')), el('div', 'prof-user', '@' + c.slug), el('div', null, ' '), name, desc, row, err);
+  box.append(el('div', 'prof-name', L('Редактирование', 'Editing')), avaEd, name, desc,
+    el('div', 'field-label', 'Адрес'), slug, chips, more, row, err);
   name.focus();
+}
+
+// «+ Добавить ещё один юзернейм» у сообщества: передать свой доп. юзернейм или открыть площадку
+$('pickClose').onclick = closePick;
+$('pickModal').addEventListener('mousedown', e => { if (e.target === $('pickModal')) closePick(); });
+function closePick() { $('pickModal').classList.add('hidden'); }
+async function openTransferPicker(c, done) {
+  $('pickTitle').textContent = 'Добавить юзернейм сообществу';
+  $('pickModal').classList.remove('hidden');
+  const box = $('pickBody');
+  box.replaceChildren(el('div', 'loader', 'Загрузка…'));
+  try {
+    const me = await api('/api/profile?u=' + encodeURIComponent(S.me.username));
+    box.replaceChildren(el('div', 'hint', 'Передайте сообществу один из своих дополнительных юзернеймов или получите новый на площадке.'));
+    const mine = me.my_usernames || [];
+    if (!mine.length) box.append(el('div', 'empty', 'У вас нет дополнительных юзернеймов'));
+    for (const x of mine) {
+      const row = el('div', 'lot');
+      const meta = el('div', 'meta');
+      meta.append(el('div', 'lot-name', '@' + x.username));
+      const give = el('button', 'btn small', 'Передать');
+      give.onclick = async () => {
+        if (!confirm(L(`Передать @${x.username} сообществу «${c.name}»?`, `Give @${x.username} to “${c.name}”?`))) return;
+        give.disabled = true;
+        try {
+          const r = await api('/api/community/usernames/transfer', { method: 'POST', body: { id: c.id, username: x.username } });
+          c.my_usernames = (c.my_usernames || []).concat({ username: r.username, hidden: false });
+          c.usernames = (c.usernames || []).concat(r.username);
+          if (S.prof && S.prof.id === S.me.id) { // у меня этого юзернейма больше нет
+            S.prof.my_usernames = (S.prof.my_usernames || []).filter(y => y.username !== x.username);
+            S.prof.usernames = (S.prof.usernames || []).filter(y => y !== x.username);
+          }
+          closePick();
+          done();
+        } catch (e) { alert(e.message); give.disabled = false; }
+      };
+      const btns = el('div', 'lot-btns');
+      btns.append(give);
+      row.append(meta, btns);
+      box.append(row);
+    }
+    const market = el('button', 'link-btn', 'Открыть площадку юзернеймов');
+    market.type = 'button';
+    market.style.marginTop = '14px';
+    market.onclick = () => { closePick(); openMarket(); };
+    box.append(market);
+  } catch (e) { box.replaceChildren(el('div', 'empty', e.message)); }
 }
 
 async function deleteCommunity() {
@@ -2018,7 +2247,12 @@ function editProfile() {
   const row = el('div', 'prof-btns');
   row.style.justifyContent = 'flex-start';
   row.append(save, cancel);
-  box.append(el('div', 'prof-name', L('Редактирование', 'Editing')), el('div', null, '\u00a0'), name, bio);
+  box.append(el('div', 'prof-name', L('Редактирование', 'Editing')),
+    avatarEditor({ id: u.id, name: u.name, avatar: u.avatar }, false, '/api/me/avatar', url => {
+      u.avatar = url; S.me.avatar = url;
+      renderMe();
+      for (const p of S.posts.values()) if (p.author.id === S.me.id) p.author.avatar = url;
+    }), name, bio);
   // юзернеймы — в самом низу формы
   box.append(el('div', 'field-label', 'Юзернейм'), uname);
   box.append(Object.assign(el('div', 'extra-names', 'Юзернейм — это и ваш логин для входа. Дополнительные юзернеймы для входа не подходят.'), { style: 'margin:-4px 0 10px' }));
@@ -2029,7 +2263,8 @@ function editProfile() {
 
 // Доп. юзернеймы — закруглённые «пилюли» с двумя кнопками:
 // глаз — показать/скрыть (скрытый не виден в профиле и по нему не находят), крестик — вернуть на площадку
-function usernameChips(u) {
+const USER_CHIPS = { vis: '/api/me/usernames/visibility', rel: '/api/me/usernames/release', extra: {} };
+function usernameChips(u, opts = USER_CHIPS) {
   const wrap = el('div', 'chips');
   const sync = () => { u.usernames = u.my_usernames.filter(y => !y.hidden).map(y => y.username); };
   for (const x of u.my_usernames) {
@@ -2041,10 +2276,10 @@ function usernameChips(u) {
     eye.onclick = async () => {
       eye.disabled = true;
       try {
-        const r = await api('/api/me/usernames/visibility', { method: 'POST', body: { username: x.username, hidden: !x.hidden } });
+        const r = await api(opts.vis, { method: 'POST', body: { ...opts.extra, username: x.username, hidden: !x.hidden } });
         x.hidden = r.hidden;
         sync();
-        wrap.replaceWith(usernameChips(u));
+        wrap.replaceWith(usernameChips(u, opts));
       } catch (e) { alert(e.message); eye.disabled = false; }
     };
     const del = el('button', 'x');
@@ -2056,10 +2291,10 @@ function usernameChips(u) {
                      `Return @${x.username} to the marketplace?\nNo refund — the username will be listed again and become available to others.`))) return;
       del.disabled = true;
       try {
-        await api('/api/me/usernames/release', { method: 'POST', body: { username: x.username } });
+        await api(opts.rel, { method: 'POST', body: { ...opts.extra, username: x.username } });
         u.my_usernames = u.my_usernames.filter(y => y !== x);
         sync();
-        wrap.replaceWith(usernameChips(u));
+        wrap.replaceWith(usernameChips(u, opts));
       } catch (e) { alert(e.message); del.disabled = false; }
     };
     chip.append(el('span', 'chip-name', '@' + x.username), eye, del);
@@ -2550,6 +2785,7 @@ function onEvent(ev) {
     case 'post': onNewPost(ev.post); break;
     case 'post_del': removePost(ev.p); break;
     case 'comm_del': onCommunityDeleted(ev.id); break;
+    case 'media': onMediaReady(ev.m); break;
     case 'likes': {
       const p = S.posts.get(ev.p);
       if (p) { p.likes = ev.n; repaintPost(ev.p); }
@@ -2561,6 +2797,7 @@ function onEvent(ev) {
 // После переподключения: обновляем список чатов и догружаем пропущенное в открытом чате.
 async function resync() {
   await loadChats();
+  if (S.inbox) await loadInbox(S.inbox);
   for (const id of [...S.msgs.keys()]) if (id !== S.current) S.msgs.delete(id);
   const id = S.current, box = S.msgs.get(id);
   if (box && box.loaded) {
@@ -2579,7 +2816,8 @@ async function resync() {
 async function loadChats() {
   try {
     const list = await api('/api/chats');
-    S.chats = new Map(list.map(c => [c.id, c]));
+    const inbox = [...S.chats.values()].filter(c => c.inbox); // чаты сообщества (для команды) не трогаем
+    S.chats = new Map([...inbox, ...list].map(c => [c.id, c]));
     S.chatsLoaded = true;
     renderList();
     renderHead();
@@ -2596,25 +2834,71 @@ function chatFromHash() {
 
 function showMessages(chatId) {
   setView('messages', 'messages');
+  if (S.inbox) { S.inbox = 0; paintSideHead(); closeChat(); }
   if (chatId && S.chats.has(chatId)) { if (S.current !== chatId) openChat(chatId); }
   else if (!chatId || S.chatsLoaded) closeChat();
 }
 
 const chatTime = c => c.last ? c.last.created : (c._t || 0);
+// В чате сообщества (у команды) «свои» сообщения — все, что написал не клиент
+const isMine = (c, m) => c && c.inbox ? m.user_id !== c.client_id : m.user_id === S.me.id;
+
+// «Чаты» сообщества: тот же мессенджер, но в списке — переписки сообщества с клиентами
+async function showInbox(cid, chatId) {
+  setView('messages', 'messages');
+  if (S.inbox !== cid) {
+    S.inbox = cid;
+    S.inboxLoaded = 0;
+    searchMode = false;
+    $('search').value = '';
+    closeChat();
+  }
+  paintSideHead();
+  if (S.inboxLoaded !== cid) await loadInbox(cid);
+  if (S.inbox !== cid) return;
+  if (chatId && S.chats.has(chatId)) { if (S.current !== chatId) openChat(chatId); }
+  else closeChat();
+}
+
+async function loadInbox(cid) {
+  try {
+    const list = await api('/api/community/inbox?id=' + cid);
+    for (const [id, c] of S.chats) if (c.inbox === cid) S.chats.delete(id);
+    for (const c of list) S.chats.set(c.id, c);
+    S.inboxLoaded = cid;
+    if (list[0]) S.inboxName = list[0].community.name;
+    else if (S.comm && S.comm.id === cid) S.inboxName = S.comm.name;
+    paintSideHead();
+    renderList();
+  } catch (e) { alert(e.message); go('feed'); }
+}
+
+function paintSideHead() {
+  const h = $('sideHead');
+  $('search').classList.toggle('hidden', !!S.inbox);
+  if (!S.inbox) { h.replaceChildren('Сообщения'); return; }
+  const back = el('button', 'icon-btn');
+  back.title = 'Назад';
+  back.innerHTML = '<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>';
+  back.onclick = () => navDepth > 0 ? history.back() : go('feed');
+  const t = el('div');
+  t.append(el('div', null, 'Чаты сообщества'), el('div', 'sub', S.inboxName || ''));
+  h.replaceChildren(back, t);
+}
 
 function renderList() {
   updateUnread();
   if (searchMode) return; // сейчас на экране результаты поиска
   const list = $('list');
   list.replaceChildren();
-  const chats = [...S.chats.values()].sort((a, b) => chatTime(b) - chatTime(a));
-  if (!chats.length) list.append(el('div', 'empty', 'Чатов пока нет. Найдите собеседника через поиск сверху.'));
+  const chats = [...S.chats.values()].filter(c => S.inbox ? c.inbox === S.inbox : !c.inbox).sort((a, b) => chatTime(b) - chatTime(a));
+  if (!chats.length) list.append(el('div', 'empty', S.inbox ? 'Клиенты пока не писали сообществу' : 'Чатов пока нет. Найдите собеседника через поиск сверху.'));
   for (const c of chats) list.append(chatItem(c));
 }
 
 function chatItem(c) {
   const it = el('div', 'item' + (c.id === S.current ? ' on' : ''));
-  const ava = el('div', 'ava');
+  const ava = el('div', 'ava' + (c.community && !c.inbox ? ' sq' : ''));
   setAva(ava, c.peer, c.peer.online);
   const meta = el('div', 'meta');
   const r1 = el('div', 'row');
@@ -2623,19 +2907,19 @@ function chatItem(c) {
   const r2 = el('div', 'row');
   const typing = S.typing.has(c.id);
   const text = typing ? L('печатает…', 'typing…')
-    : c.last ? (c.last.user_id === S.me?.id ? L('Вы: ', 'You: ') : '') + c.last.body.replace(/\s+/g, ' ')
+    : c.last ? (S.me && isMine(c, c.last) ? L('Вы: ', 'You: ') : '') + c.last.body.replace(/\s+/g, ' ')
     : '@' + c.peer.username;
   r2.append(el('div', 'prev' + (typing ? ' typing' : ''), text));
   if (c.unread > 0) r2.append(el('div', 'badge', c.unread > 99 ? '99+' : c.unread));
   meta.append(r1, r2);
   it.append(ava, meta);
-  it.onclick = () => go('messages/' + c.id);
+  it.onclick = () => go(c.inbox ? `inbox/${c.inbox}/${c.id}` : 'messages/' + c.id);
   return it;
 }
 
 function updateUnread() {
   let n = 0;
-  for (const c of S.chats.values()) n += c.unread || 0;
+  for (const c of S.chats.values()) if (!c.inbox) n += c.unread || 0;
   document.title = n ? `(${n}) divy` : 'divy';
   $('navBadge').textContent = n > 99 ? '99+' : n;
   $('navBadge').classList.toggle('hidden', !n);
@@ -2718,8 +3002,13 @@ function leaveChat() {
   document.body.classList.remove('in-chat');
 }
 // «Назад» из чата: если пришли из списка — шаг назад по истории (работает и системная кнопка Android)
-$('back').onclick = () => navDepth > 0 ? history.back() : go('messages');
-const openPeer = () => { const c = S.chats.get(S.current); if (c) go('u/' + encodeURIComponent(c.peer.username)); };
+$('back').onclick = () => navDepth > 0 ? history.back() : go(S.inbox ? 'inbox/' + S.inbox : 'messages');
+const openPeer = () => {
+  const c = S.chats.get(S.current);
+  if (!c) return;
+  if (c.community && !c.inbox) go('c/' + encodeURIComponent(c.community.slug)); // чат с сообществом → его страница
+  else go('u/' + encodeURIComponent(c.peer.username));
+};
 $('peerAva').onclick = openPeer;
 $('peerName').onclick = openPeer;
 
@@ -2727,9 +3016,11 @@ function renderHead() {
   const c = S.chats.get(S.current);
   if (!c) return;
   setAva($('peerAva'), c.peer, c.peer.online);
+  $('peerAva').classList.toggle('sq', !!(c.community && !c.inbox));
   $('peerName').textContent = c.peer.name;
   const st = $('peerStatus');
   if (S.typing.has(c.id)) { st.textContent = L('печатает…', 'typing…'); st.className = 'status typing'; }
+  else if (c.community && !c.inbox) { st.textContent = L('сообщество', 'community'); st.className = 'status'; }
   else { st.textContent = lastSeenText(c.peer); st.className = 'status' + (c.peer.online ? ' online' : ''); }
 }
 setInterval(renderHead, 60000); // «был(а) N мин. назад» обновляется само
@@ -2756,7 +3047,7 @@ function renderMsgs(forceBottom = false, keepPosition = false) {
   for (const m of all) {
     const day = new Date(m.created).toDateString();
     if (day !== lastDay) { wrap.append(el('div', 'day', dayLabel(m.created))); lastDay = day; }
-    const mine = m.user_id === S.me.id;
+    const mine = isMine(c, m);
     const node = el('div', 'msg' + (mine ? ' mine' : '') + (m.pending ? ' pending' : '') + (m.failed ? ' failed' : ''), m.body);
     const info = el('span', 'info', hm(m.created));
     if (mine) {
@@ -2791,12 +3082,12 @@ $('msgs').addEventListener('scroll', async () => {
 
 function addMessage(m) {
   const c = S.chats.get(m.chat_id);
-  if (!c) { loadChats(); return; } // чат, которого ещё нет в списке
+  if (!c) { if (S.inbox) loadInbox(S.inbox); loadChats(); return; } // чат, которого ещё нет в списке
   const isNew = !c.last || m.id > c.last.id;
   const box = S.msgs.get(m.chat_id);
   if (box && box.loaded) box.list = mergeMsgs(box.list, [m]);
   if (isNew) c.last = m;
-  const mine = m.user_id === S.me.id;
+  const mine = isMine(c, m);
   if (mine) c.my_read = Math.max(c.my_read, m.id);
   else {
     stopTyping(c.id);
@@ -2886,6 +3177,7 @@ function onRead(ev) {
     if (!c.last || ev.m >= c.last.id) c.unread = 0;
     renderList();
   } else {
+    if (c.inbox && ev.u !== c.client_id) return; // прочитал коллега по команде — не «собеседник»
     c.peer_read = Math.max(c.peer_read, ev.m);
     if (S.current === c.id) renderMsgs();
   }
@@ -2893,6 +3185,7 @@ function onRead(ev) {
 
 function onPresence(ev) {
   for (const c of S.chats.values()) {
+    if (c.community && !c.inbox) continue; // собеседник — сообщество, а не человек
     if (c.peer.id !== ev.u) continue;
     c.peer.online = ev.online;
     if (ev.last_seen) c.peer.last_seen = ev.last_seen;
