@@ -208,7 +208,38 @@ svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2; s
 .post-actions { display:flex; gap:16px; margin:6px 0 0 -8px }
 .act { display:flex; align-items:center; gap:6px; color:var(--muted); padding:5px 8px; border-radius:16px; font-size:14px }
 .act svg { width:19px; height:19px }
-.act:hover { color:var(--danger); background:rgba(255,107,107,.1) }
+.act.like:hover { color:var(--danger); background:rgba(255,107,107,.1) }
+.act.com:hover, .act.share:hover { color:var(--accent); background:rgba(91,140,255,.1) }
+.act.rep:hover { color:var(--ok); background:rgba(62,207,142,.1) }
+.act.rep.on { color:var(--ok) }
+.act.share { margin-left:auto }
+/* комментарии под постом */
+.comments { margin-top:6px; border-top:1px solid var(--line); padding:8px 0 4px }
+.cmt { display:flex; gap:10px; padding:6px 0 }
+.cmt .ava { width:32px; height:32px; font-size:13px; cursor:pointer }
+.cmt-main { flex:1; min-width:0 }
+.cmt-head { display:flex; gap:6px; align-items:center; min-width:0 }
+.cmt-head .post-del { margin-left:auto }
+.cmt-body { font-size:14.5px; white-space:pre-wrap; overflow-wrap:anywhere }
+.c-empty { color:var(--muted); font-size:14px; padding:4px 0 }
+.c-form { display:flex; gap:6px; align-items:center; margin-top:6px }
+.c-form .field { margin:0; padding:9px 14px; border-radius:18px }
+.c-form .icon-btn { color:var(--accent) }
+/* ссылки в постах и сообщениях */
+.lnk { color:var(--accent); text-decoration:underline; text-underline-offset:2px; word-break:break-all }
+.msg.mine .lnk { color:inherit }
+/* поделиться */
+.share-item { display:flex; align-items:center; gap:12px; padding:8px 0 }
+.share-item .meta .title { font-weight:600 }
+/* панель администратора */
+.adm-links { display:grid; gap:10px }
+.adm-link { display:flex; align-items:center; gap:12px; padding:14px; border:1px solid var(--line); border-radius:14px; background:var(--panel); text-align:left; width:100% }
+.adm-link:hover { background:var(--panel2) }
+.adm-link .ic { width:22px; height:22px; color:var(--accent) }
+.adm-link b { display:block; font-size:15px }
+.adm-link span { color:var(--muted); font-size:13px }
+.adm-link .chev { margin-left:auto; width:18px; height:18px; color:var(--muted) }
+.adm-sub { color:var(--muted); font-size:14px; margin-bottom:10px }
 .act.liked { color:var(--danger) }
 .act.liked svg { fill:currentColor }
 
@@ -539,11 +570,16 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
         <div class="prof" id="profHead"></div>
         <div class="ptabs" id="profTabs">
           <button data-tab="posts" class="on">Посты</button>
+          <button data-tab="reposts">Репосты</button>
           <button data-tab="communities">Сообщества</button>
         </div>
         <div id="profPostsBox">
           <div id="profList"></div>
           <div class="loader" id="profMore"></div>
+        </div>
+        <div id="profRepBox" class="hidden">
+          <div id="profRepList"></div>
+          <div class="loader" id="profRepMore"></div>
         </div>
         <div id="profComms" class="hidden"></div>
       </div>
@@ -566,23 +602,53 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
     </section>
 
     <!-- Панель администратора -->
+    <!-- Один пост (открывается по ссылке «Поделиться») -->
+    <section class="view" id="vPost">
+      <div class="col">
+        <div class="top">
+          <h1>
+            <button class="icon-btn" id="postBack" title="Назад"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <span>Пост</span>
+          </h1>
+          <div style="height:8px"></div>
+        </div>
+        <div id="postPage"></div>
+      </div>
+    </section>
+
+    <!-- Панель администратора: разделы по вкладкам -->
     <section class="view" id="vAdmin">
       <div class="col">
         <div class="top">
           <h1>Панель администратора</h1>
-          <div style="height:8px"></div>
+          <div class="ptabs" id="admTabs">
+            <button data-sec="overview" class="on">Обзор</button>
+            <button data-sec="verif">Верификация</button>
+            <button data-sec="names">Юзернеймы</button>
+          </div>
         </div>
-        <div class="adm-section">
-          <div class="adm-rank" id="admRank"></div>
-          <div class="adm-stats" id="admStats"></div>
+        <!-- Обзор -->
+        <div class="adm-pane" id="admOverview">
+          <div class="adm-section">
+            <div class="adm-rank" id="admRank"></div>
+            <div class="adm-stats" id="admStats"></div>
+          </div>
+          <div class="adm-section">
+            <div class="adm-title">Разделы</div>
+            <div class="adm-links" id="admLinks"></div>
+          </div>
         </div>
-        <div class="adm-section hidden" id="admVerifSection">
-          <div class="adm-title">Заявки на верификацию</div>
-          <div id="admVerif"></div>
+        <!-- Верификация -->
+        <div class="adm-pane hidden" id="admVerifPane">
+          <div class="adm-section">
+            <div class="adm-sub">Заявки пользователей на галочку. Решение принимают модераторы и выше.</div>
+            <div id="admVerif"></div>
+          </div>
         </div>
-        <div class="adm-section">
-          <div class="adm-title">Юзернеймы площадки</div>
-          <div id="admMarketForm" class="hidden">
+        <!-- Юзернеймы площадки -->
+        <div class="adm-pane hidden" id="admNamesPane">
+          <div class="adm-section hidden" id="admMarketForm">
+            <div class="adm-title">Выставить юзернейм</div>
             <input class="field" id="lUser" maxlength="20" placeholder="Юзернейм: от 1 до 20 символов (латиница, цифры, _)" autocomplete="off" autocapitalize="off" spellcheck="false">
             <div class="seg" id="lKind">
               <button type="button" data-kind="sale" class="on">Продажа</button>
@@ -593,7 +659,10 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
             <button class="btn small" id="lAdd">Выставить</button>
             <div class="err" id="lErr"></div>
           </div>
-          <div id="admMarket"></div>
+          <div class="adm-section">
+            <div class="adm-title">Сейчас на площадке</div>
+            <div id="admMarket"></div>
+          </div>
         </div>
       </div>
     </section>
@@ -806,6 +875,22 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
   </div>
 </div>
 
+<!-- Поделиться постом: ссылка или отправка в чат -->
+<div class="modal hidden" id="shareModal">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="icon-btn" id="shareClose" title="Закрыть"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      Поделиться
+    </div>
+    <div class="sheet-body">
+      <button class="btn ghost" id="shareCopy" type="button">Скопировать ссылку</button>
+      <div class="field-label" style="margin-top:16px">Отправить в чат</div>
+      <input class="field" id="shareSearch" placeholder="Найти чат" autocomplete="off">
+      <div id="shareList"></div>
+    </div>
+  </div>
+</div>
+
 <!-- Окно создания сообщества -->
 <div class="modal hidden" id="commModal">
   <div class="sheet">
@@ -851,6 +936,10 @@ const ICON = {
   heart: '<svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>',
   eye: '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
   eyeOff: '<svg viewBox="0 0 24 24"><path d="M17.9 17.9A10 10 0 0 1 12 20C5 20 1 12 1 12a18 18 0 0 1 5.1-5.9M9.9 4.2A9 9 0 0 1 12 4c7 0 11 8 11 8a18 18 0 0 1-2.2 3.2M14.1 14.1a3 3 0 1 1-4.2-4.2"/><path d="M1 1l22 22"/></svg>',
+  comment: '<svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-4-.9L3 21l2-5a8.4 8.4 0 0 1-1-4.5A8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5z"/></svg>',
+  repost: '<svg viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>',
+  share: '<svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg>',
+  send: '<svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>',
   camera: '<svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
   cross: '<svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>',
   trash: '<svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>',
@@ -883,6 +972,9 @@ const S = {
   postAs: null,       // от чьего имени пишу пост: null — от себя, иначе сообщество
   asTab: 'user',
   attach: [],         // фото/видео, прикреплённые к новому посту
+  seenComments: new Set(), // id уже учтённых комментариев (свой приходит и ответом, и по WebSocket)
+  goneComments: new Set(),
+  repFor: 0,          // для какого профиля загружена вкладка «Репосты»
   myEmail: '',        // почта для восстановления пароля (видна только мне)
 };
 let searchMode = false, searchTimer = 0, authMode = 'login', navDepth = 0;
@@ -894,6 +986,9 @@ const FEED = { box: 'feedList', loader: 'feedMore', ids: [], more: true, busy: f
 const PROF = { box: 'profList', loader: 'profMore', ids: [], more: true, busy: false, error: false, gen: 0,
   url: () => '/api/feed?user=' + (S.prof ? S.prof.id : 0),
   empty: () => 'Постов пока нет' };
+const REP = { box: 'profRepList', loader: 'profRepMore', ids: [], more: false, busy: false, error: false, gen: 0,
+  url: () => '/api/feed?reposts=' + (S.prof ? S.prof.id : 0),
+  empty: () => 'Репостов пока нет' };
 const COMM = { box: 'commList', loader: 'commMore', ids: [], more: false, busy: false, error: false, gen: 0,
   url: () => '/api/feed?community=' + (S.comm ? S.comm.id : 0),
   empty: () => 'В сообществе пока нет постов' };
@@ -988,7 +1083,20 @@ const EN = {
   'Пароль изменён. На других устройствах нужно будет войти заново.': 'Password changed. Other devices will need to log in again.',
   'Показать в профиле': 'Show on profile', 'Скрыть из профиля': 'Hide from profile', 'Вернуть на площадку': 'Return to marketplace',
   'Редактирование': 'Editing', 'Верификация аккаунта': 'Account verification', 'Добавить фото или видео': 'Add photos or videos',
-  'Забыл пароль': 'Forgot password', 'Главная': 'Home', 'Знакомства': 'Dating',
+  'Забыл пароль': 'Forgot password', 'Репосты': 'Reposts', 'Репостов пока нет': 'No reposts yet', 'Репост': 'Repost',
+  'Отменить репост': 'Undo repost', 'Комментарии': 'Comments', 'Поделиться': 'Share', 'Написать комментарий…': 'Write a comment…',
+  'Комментариев пока нет': 'No comments yet', 'Удалить комментарий?': 'Delete this comment?', 'Скопировать ссылку': 'Copy link',
+  'Ссылка скопирована ✓': 'Link copied ✓', 'Скопируйте ссылку:': 'Copy the link:', 'Отправить в чат': 'Send to a chat', 'Найти чат': 'Find a chat',
+  'Отправлено ✓': 'Sent ✓', 'Чатов пока нет — начните переписку в «Сообщениях»': 'No chats yet — start a conversation in “Messages”',
+  'Пост': 'Post', 'Обзор': 'Overview', 'Верификация': 'Verification', 'Юзернеймы': 'Usernames', 'Разделы': 'Sections',
+  'Выставить юзернейм': 'List a username', 'Сейчас на площадке': 'On the marketplace now',
+  'Заявки пользователей на галочку. Решение принимают модераторы и выше.': 'Users’ requests for the checkmark. Moderators and above decide.',
+  'Возраст (12+)': 'Age (12+)', 'Возраст от': 'Age from', 'Возраст до': 'Age to',
+  'Подростки (12–17 лет) видят только ровесников, взрослые — только взрослых.': 'Teens (12–17) only see people their age, adults only see adults.',
+  'знакомства доступны с 12 лет': 'Dating is available from age 12', 'анкета недоступна': 'this profile is not available', 'анкета не найдена': 'profile not found',
+  'пост не найден или удалён': 'post not found or deleted', 'пустой комментарий': 'the comment is empty', 'комментарий слишком длинный': 'the comment is too long',
+  'нельзя удалить чужой комментарий': "you can't delete someone else's comment",
+  'свой пост репостить не нужно — он и так в вашем профиле': "no need to repost your own post — it's already on your profile", 'Главная': 'Home', 'Знакомства': 'Dating',
   'Моя анкета': 'My dating profile', 'Избранное': 'Favorites', 'Фильтры': 'Filters', 'Не интересно': 'Not interested',
   'Интересно': 'Interested', 'Заполнить анкету': 'Fill in my profile', 'Чтобы смотреть анкеты, заполните свою': 'To see other profiles, fill in yours first',
   'Анкеты закончились. Измените фильтры или загляните позже': 'No more profiles. Change your filters or check back later',
@@ -1048,7 +1156,7 @@ function tr(s) {
   return r == null ? s : s.replace(t, r);
 }
 // пользовательский контент не трогаем
-const NO_TR = '.dname,.dplace,.dcard-bio,.fav-bio,.side-head .sub,.post-body,.post-name,.prof-name,.prof-bio,.prof-user,.msg,.title,.prev,.comm-desc,.comm-slug,.lot-name,.req-text,.req-links,.chip-name,.brand,.logo,textarea';
+const NO_TR = '.cmt-body,.lnk,.dname,.dplace,.dcard-bio,.fav-bio,.side-head .sub,.post-body,.post-name,.prof-name,.prof-bio,.prof-user,.msg,.title,.prev,.comm-desc,.comm-slug,.lot-name,.req-text,.req-links,.chip-name,.brand,.logo,textarea';
 function translateTree(root) {
   if (root.nodeType === 3) {
     const p = root.parentElement;
@@ -1208,7 +1316,9 @@ async function api(path, opts = {}) {
   });
   const data = await res.json().catch(() => ({}));
   if (res.status === 401 && S.token && !opts.noLogout) logout(false);
-  if (!res.ok) throw new Error(data.error || 'Ошибка ' + res.status);
+  if (!res.ok) throw new Error(data.error || (res.status === 404
+    ? L('Функция пока недоступна: сервер ещё не обновлён', 'This feature is not available yet: the server has not been updated')
+    : 'Ошибка ' + res.status));
   return data;
 }
 
@@ -1287,7 +1397,8 @@ function route() {
   if (a === 'messages') showMessages(b ? Number(b) : 0);
   else if (a === 'u' && b) showProfile(decodeURIComponent(b));
   else if (a === 'c' && b) showCommunity(decodeURIComponent(b));
-  else if (a === 'admin') showAdmin();
+  else if (a === 'admin') showAdmin(b);
+  else if (a === 'p' && b) showPostPage(Number(b));
   else if (a === 'dating') showDating(b);
   else if (a === 'inbox' && b) showInbox(Number(b), Number(c3) || 0);
   else showFeed();
@@ -1300,6 +1411,7 @@ function setView(name, navKey) {
   $('vProfile').classList.toggle('on', name === 'profile');
   $('vCommunity').classList.toggle('on', name === 'community');
   $('vAdmin').classList.toggle('on', name === 'admin');
+  $('vPost').classList.toggle('on', name === 'post');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('on', b.dataset.go === navKey));
   updateFab();
   if (name !== 'messages') leaveChat();
@@ -1310,7 +1422,7 @@ function setView(name, navKey) {
 function updateFab() {
   const fab = $('createBtn');
   const show = (S.view === 'feed' && D.mode !== 'dating')
-    || (S.view === 'profile' && S.profMine && !S.profEditing)
+    || (S.view === 'profile' && S.profMine && !S.profEditing && S.profTab !== 'reposts')
     || (S.view === 'community' && S.comm && !!S.comm.role);
   fab.classList.toggle('hidden', !show);
   const view = { feed: 'vFeed', profile: 'vProfile', community: 'vCommunity' }[S.view];
@@ -1761,7 +1873,7 @@ function nearScreen(node) {
 const io = new IntersectionObserver(entries => {
   for (const e of entries) {
     if (!e.isIntersecting) continue;
-    const L = { feedMore: FEED, profMore: PROF, commMore: COMM }[e.target.id];
+    const L = { feedMore: FEED, profMore: PROF, commMore: COMM, profRepMore: REP }[e.target.id];
     L.error = false;
     loadList(L);
   }
@@ -1769,6 +1881,7 @@ const io = new IntersectionObserver(entries => {
 io.observe($('feedMore'));
 io.observe($('profMore'));
 io.observe($('commMore'));
+io.observe($('profRepMore'));
 
 function prependPost(L, p) {
   if (L.ids.includes(p.id)) return;
@@ -1812,9 +1925,26 @@ function postNode(p) {
   like.innerHTML = ICON.heart;
   like.append(el('span', 'n'));
   like.onclick = () => toggleLike(p.id);
-  acts.append(like);
+  const com = el('button', 'act com');
+  com.title = 'Комментарии';
+  com.innerHTML = ICON.comment;
+  com.append(el('span', 'n'));
+  com.onclick = () => toggleComments(art, p);
+  acts.append(like, com);
+  if (!(p.author.id === S.me.id && !p.community)) { // свой личный пост репостить не нужно — он и так в профиле
+    const rp = el('button', 'act rep');
+    rp.innerHTML = ICON.repost;
+    rp.append(el('span', 'n'));
+    rp.onclick = () => toggleRepost(p.id);
+    acts.append(rp);
+  }
+  const share = el('button', 'act share');
+  share.title = 'Поделиться';
+  share.innerHTML = ICON.share;
+  share.onclick = () => openShare(p);
+  acts.append(share);
   main.append(head);
-  if (p.body) main.append(el('div', 'post-body', p.body));
+  if (p.body) { const body = el('div', 'post-body'); linkify(body, p.body); main.append(body); }
   if (p.media && p.media.length) main.append(carousel(p.media));
   main.append(acts);
   art.append(ava, main);
@@ -1834,6 +1964,206 @@ function paintLike(node, p) {
   like.classList.toggle('liked', p.liked);
   like.title = p.liked ? 'Убрать лайк' : 'Нравится';
   like.querySelector('.n').textContent = p.likes > 0 ? p.likes : '';
+  const com = node.querySelector('.act.com');
+  if (com) com.querySelector('.n').textContent = p.comments > 0 ? p.comments : '';
+  const rp = node.querySelector('.act.rep');
+  if (rp) {
+    rp.classList.toggle('on', !!p.reposted);
+    rp.title = p.reposted ? 'Отменить репост' : 'Репост';
+    rp.querySelector('.n').textContent = p.reposts > 0 ? p.reposts : '';
+  }
+}
+
+// Ссылки в тексте становятся кликабельными; ссылка на пост divy открывается прямо в приложении
+function linkify(node, text) {
+  const re = /https?:\/\/[^\s<>"]+/g;
+  let last = 0, m;
+  while ((m = re.exec(text))) {
+    if (m.index > last) node.append(text.slice(last, m.index));
+    const url = m[0].replace(/[.,!?)»]+$/, '');
+    const a = el('a', 'lnk', url);
+    a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    const post = url.match(/#\/p\/(\d+)/);
+    if (post && url.startsWith(location.origin)) a.onclick = e => { e.preventDefault(); go('p/' + post[1]); };
+    node.append(a);
+    last = m.index + url.length;
+    re.lastIndex = last;
+  }
+  if (last < text.length) node.append(text.slice(last));
+}
+
+// --- репост ---
+async function toggleRepost(id) {
+  const p = S.posts.get(id);
+  if (!p) return;
+  const on = !p.reposted;
+  p.reposted = on; p.reposts += on ? 1 : -1; // сразу, не дожидаясь сервера
+  repaintPost(id);
+  try {
+    const r = await api('/api/posts/repost', { method: 'POST', body: { post_id: id, on } });
+    p.reposts = r.reposts; p.reposted = r.reposted;
+    if (S.prof && S.prof.id === S.me.id && S.repFor === S.prof.id) { // моя вкладка «Репосты» уже открыта
+      if (on) prependPost(REP, p);
+      else { REP.ids = REP.ids.filter(x => x !== id); $('profRepList').querySelectorAll(`[data-post="${id}"]`).forEach(n => n.remove()); updateLoader(REP); }
+    }
+  } catch (e) {
+    p.reposted = !on; p.reposts += on ? -1 : 1;
+    alert(e.message);
+  }
+  repaintPost(id);
+}
+
+// --- комментарии ---
+function toggleComments(art, p, forceOpen) {
+  let box = art.querySelector('.comments');
+  if (box) { if (!forceOpen) box.remove(); return; }
+  box = el('div', 'comments');
+  box.dataset.comments = p.id;
+  const list = el('div', 'c-list');
+  list.append(el('div', 'loader', 'Загрузка…'));
+  const form = el('form', 'c-form');
+  const input = el('input', 'field');
+  input.placeholder = 'Написать комментарий…';
+  input.maxLength = 1000;
+  const send = el('button', 'icon-btn');
+  send.title = 'Отправить';
+  send.innerHTML = ICON.send;
+  form.append(input, send);
+  form.onsubmit = async e => {
+    e.preventDefault();
+    const body = input.value.trim();
+    if (!body) return;
+    send.disabled = true;
+    try {
+      const c = await api('/api/comments', { method: 'POST', body: { post_id: p.id, body } });
+      input.value = '';
+      onComment(c);
+    } catch (err) { alert(err.message); }
+    send.disabled = false;
+  };
+  box.append(list, form);
+  art.querySelector('.post-main').append(box);
+  api('/api/comments?post=' + p.id).then(cs => {
+    list.replaceChildren();
+    if (!cs.length) list.append(el('div', 'c-empty', 'Комментариев пока нет'));
+    for (const c of cs) { S.seenComments.add(c.id); list.append(commentNode(c)); }
+  }).catch(e => list.replaceChildren(el('div', 'c-empty', e.message)));
+  if (DEVICE === 'pc') input.focus();
+}
+
+function commentNode(c) {
+  const it = el('div', 'cmt');
+  it.dataset.cmt = c.id;
+  const open = () => go('u/' + encodeURIComponent(c.author.username));
+  const a = el('div', 'ava');
+  setAva(a, c.author, false);
+  a.onclick = open;
+  const main = el('div', 'cmt-main');
+  const head = el('div', 'cmt-head');
+  const name = el('span', 'post-name', c.author.name);
+  name.onclick = open;
+  head.append(name);
+  if (c.author.verified) head.append(verifiedBadge());
+  head.append(el('span', 'post-sub', postTime(c.created)));
+  const post = S.posts.get(c.post_id);
+  // удалить может автор комментария, автор поста или команда сообщества
+  if (c.author.id === S.me.id || (post && ((post.author.id === S.me.id && !post.community) || (post.community && canManage(post.community.id))))) {
+    const del = el('button', 'post-del');
+    del.title = 'Удалить';
+    del.innerHTML = ICON.trash;
+    del.onclick = async () => {
+      if (!confirm('Удалить комментарий?')) return;
+      try {
+        await api('/api/comments/delete', { method: 'POST', body: { id: c.id } });
+        onCommentDeleted(c.id, c.post_id);
+      } catch (e) { alert(e.message); }
+    };
+    head.append(del);
+  }
+  const body = el('div', 'cmt-body');
+  linkify(body, c.body);
+  main.append(head, body);
+  it.append(a, main);
+  return it;
+}
+
+// новый комментарий (свой — сразу после отправки, чужой — по WebSocket)
+function onComment(c) {
+  if (S.seenComments.has(c.id)) return;
+  S.seenComments.add(c.id);
+  const p = S.posts.get(c.post_id);
+  if (p) { p.comments++; repaintPost(p.id); }
+  document.querySelectorAll(`[data-comments="${c.post_id}"] .c-list`).forEach(list => {
+    list.querySelector('.c-empty')?.remove();
+    list.append(commentNode(c));
+  });
+}
+
+function onCommentDeleted(id, postId) {
+  if (S.goneComments.has(id)) return;
+  S.goneComments.add(id);
+  const p = S.posts.get(postId);
+  if (p && p.comments > 0) { p.comments--; repaintPost(postId); }
+  document.querySelectorAll(`[data-cmt="${id}"]`).forEach(n => n.remove());
+}
+
+// --- поделиться: ссылка или отправка в чат другу ---
+const postLink = id => location.origin + location.pathname + '#/p/' + id;
+$('shareClose').onclick = closeShare;
+$('shareModal').addEventListener('mousedown', e => { if (e.target === $('shareModal')) closeShare(); });
+function closeShare() { $('shareModal').classList.add('hidden'); }
+function openShare(p) {
+  S.sharePost = p;
+  $('shareSearch').value = '';
+  $('shareCopy').textContent = tr('Скопировать ссылку');
+  $('shareModal').classList.remove('hidden');
+  renderShareList();
+}
+$('shareSearch').oninput = renderShareList;
+$('shareCopy').onclick = async () => {
+  try { await navigator.clipboard.writeText(postLink(S.sharePost.id)); $('shareCopy').textContent = tr('Ссылка скопирована ✓'); }
+  catch { prompt(tr('Скопируйте ссылку:'), postLink(S.sharePost.id)); }
+};
+function renderShareList() {
+  const q = $('shareSearch').value.trim().toLowerCase();
+  const box = $('shareList');
+  box.replaceChildren();
+  const chats = [...S.chats.values()].filter(c => !c.inbox)
+    .filter(c => !q || c.peer.name.toLowerCase().includes(q) || c.peer.username.toLowerCase().includes(q))
+    .sort((a, b) => chatTime(b) - chatTime(a));
+  if (!chats.length) { box.append(el('div', 'empty', q ? 'Никого не нашли' : 'Чатов пока нет — начните переписку в «Сообщениях»')); return; }
+  for (const c of chats) {
+    const it = el('div', 'share-item');
+    const a = el('div', 'ava' + (c.community ? ' sq' : ''));
+    setAva(a, c.peer, false);
+    const meta = el('div', 'meta');
+    meta.append(el('div', 'title', c.peer.name), el('div', 'prev', '@' + c.peer.username));
+    const btn = el('button', 'btn small', 'Отправить');
+    btn.onclick = () => {
+      const p = S.sharePost;
+      const text = (p.body ? p.body.slice(0, 80).replace(/\s+/g, ' ') + (p.body.length > 80 ? '…' : '') + '\n' : '') + postLink(p.id);
+      sendTextTo(c.id, text);
+      btn.disabled = true;
+      btn.textContent = tr('Отправлено ✓');
+    };
+    it.append(a, meta, btn);
+    box.append(it);
+  }
+}
+
+// --- страница одного поста ---
+$('postBack').onclick = () => navDepth > 0 ? history.back() : go('feed');
+async function showPostPage(id) {
+  setView('post', '');
+  const box = $('postPage');
+  box.replaceChildren(el('div', 'loader', 'Загрузка…'));
+  try {
+    const p = await api('/api/post?id=' + id);
+    cachePost(p);
+    const art = postNode(p);
+    box.replaceChildren(art);
+    toggleComments(art, p, true); // комментарии сразу открыты
+  } catch (e) { box.replaceChildren(el('div', 'empty', e.message)); }
 }
 function repaintPost(id) {
   const p = S.posts.get(id);
@@ -1866,7 +2196,7 @@ async function deletePost(id) {
 function removePost(id) {
   const p = S.posts.get(id);
   S.posts.delete(id);
-  for (const L of [FEED, PROF, COMM]) {
+  for (const L of [FEED, PROF, COMM, REP]) {
     const i = L.ids.indexOf(id);
     if (i >= 0) { L.ids.splice(i, 1); updateLoader(L); }
   }
@@ -2121,8 +2451,8 @@ function renderDatingMe(box) {
   toProfile.type = 'button';
   toProfile.onclick = () => go('u/' + encodeURIComponent(S.me.username));
   const gender = segControl([['male', 'Мужской'], ['female', 'Женский']], p.gender);
-  const age = fieldInput(p.age || '', 'Возраст (18+)', 'number');
-  age.min = 18; age.max = 100;
+  const age = fieldInput(p.age || '', 'Возраст (12+)', 'number');
+  age.min = 12; age.max = 100;
   const country = fieldInput(p.country, 'Страна');
   const city = fieldInput(p.city, 'Город');
   const row = el('div', 'row2');
@@ -2147,19 +2477,24 @@ function renderDatingMe(box) {
     } catch (e) { err.textContent = e.message; save.disabled = false; }
   };
   form.append(pv, el('div', 'hint', 'Имя, фото и описание берутся из профиля.'), toProfile,
-    el('div', 'field-label', 'Пол'), gender, el('div', 'field-label', 'Возраст'), age, row, activeBox, save, err);
+    el('div', 'field-label', 'Пол'), gender, el('div', 'field-label', 'Возраст'), age,
+    el('div', 'hint', 'Подростки (12–17 лет) видят только ровесников, взрослые — только взрослых.'), row, activeBox, save, err);
   box.append(form);
 }
 
 function renderDatingFilters(box) {
-  const f = D.filters || { gender: 'any', age_min: 18, age_max: 100, city: '', country: '' };
+  const f = D.filters || { gender: 'any', age_min: 12, age_max: 100, city: '', country: '' };
   const form = el('div', 'dform');
   const gender = segControl([['any', 'Все'], ['male', 'Мужчины'], ['female', 'Женщины']], f.gender);
   const from = fieldInput(f.age_min, 'от', 'number');
   const to = fieldInput(f.age_max, 'до', 'number');
-  from.min = to.min = 18; from.max = to.max = 100;
+  from.min = to.min = 12; from.max = to.max = 100;
+  // подписи над каждой строкой ввода
   const ages = el('div', 'row2');
-  ages.append(from, to);
+  const a1 = el('div'), a2 = el('div');
+  a1.append(el('div', 'field-label', 'Возраст от'), from);
+  a2.append(el('div', 'field-label', 'Возраст до'), to);
+  ages.append(a1, a2);
   const country = fieldInput(f.country, 'Любая');
   const city = fieldInput(f.city, 'Любой');
   const row = el('div', 'row2');
@@ -2174,13 +2509,13 @@ function renderDatingFilters(box) {
     err.textContent = '';
     try {
       D.filters = await api('/api/dating/filters', { method: 'POST', body: {
-        gender: gender.value, age_min: Number(from.value) || 18, age_max: Number(to.value) || 100,
+        gender: gender.value, age_min: Number(from.value) || 12, age_max: Number(to.value) || 100,
         city: city.value.trim(), country: country.value.trim() } });
       resetDeck();
       go('dating');
     } catch (e) { err.textContent = e.message; save.disabled = false; }
   };
-  form.append(el('div', 'field-label', 'Кто вам интересен'), gender, el('div', 'field-label', 'Возраст'), ages, row, save, err);
+  form.append(el('div', 'field-label', 'Кто вам интересен'), gender, ages, row, save, err);
   box.append(form);
 }
 
@@ -2201,6 +2536,9 @@ async function showProfile(username) {
     $('profComms').replaceChildren();
     setProfTab('posts');
     PROF.gen++; PROF.ids = []; PROF.more = false; PROF.busy = false;
+    REP.gen++; REP.ids = []; REP.more = false; REP.busy = false; S.repFor = 0;
+    $('profRepList').replaceChildren();
+    $('profRepMore').textContent = '';
     $('profList').replaceChildren();
     $('profMore').textContent = '';
     $('profHead').replaceChildren(el('div', 'loader', 'Загрузка…'));
@@ -2224,8 +2562,10 @@ function setProfTab(tab) {
   S.profTab = tab;
   document.querySelectorAll('#profTabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
   $('profPostsBox').classList.toggle('hidden', tab !== 'posts');
+  $('profRepBox').classList.toggle('hidden', tab !== 'reposts');
   $('profComms').classList.toggle('hidden', tab !== 'communities');
   updateFab();
+  if (tab === 'reposts' && S.prof && S.repFor !== S.prof.id) { S.repFor = S.prof.id; loadList(REP, true); }
   if (tab === 'communities' && S.prof && !S.comms) loadCommunities();
 }
 
@@ -2518,7 +2858,7 @@ $('cBtn').onclick = async () => {
 function setProfEditing(on) {
   S.profEditing = on;
   $('profTabs').classList.toggle('hidden', on);
-  if (on) { $('profPostsBox').classList.add('hidden'); $('profComms').classList.add('hidden'); }
+  if (on) { $('profPostsBox').classList.add('hidden'); $('profRepBox').classList.add('hidden'); $('profComms').classList.add('hidden'); }
   else setProfTab(S.profTab || 'posts');
   updateFab();
 }
@@ -2981,18 +3321,54 @@ function verifNode(v) {
 }
 
 // ================= Панель администратора =================
-async function showAdmin() {
+// Разделы панели: Обзор (ранг, цифры, переходы), Верификация (модер+), Юзернеймы площадки
+document.querySelectorAll('#admTabs button').forEach(b => b.onclick = () => go(b.dataset.sec === 'overview' ? 'admin' : 'admin/' + b.dataset.sec));
+
+async function showAdmin(sec) {
   if (!hasRank('intern')) { go('feed'); return; }
   setView('admin', 'admin');
+  const canVerif = hasRank('moder');
+  if (!['verif', 'names'].includes(sec) || (sec === 'verif' && !canVerif)) sec = 'overview';
+  document.querySelectorAll('#admTabs button').forEach(b => {
+    b.classList.toggle('on', b.dataset.sec === sec);
+    if (b.dataset.sec === 'verif') b.classList.toggle('hidden', !canVerif);
+  });
+  $('admOverview').classList.toggle('hidden', sec !== 'overview');
+  $('admVerifPane').classList.toggle('hidden', sec !== 'verif');
+  $('admNamesPane').classList.toggle('hidden', sec !== 'names');
+  $('vAdmin').scrollTop = 0;
+  if (sec === 'verif') loadAdminVerifications();
+  else if (sec === 'names') { $('admMarketForm').classList.toggle('hidden', !hasRank('admin')); loadAdminMarket(); }
+  else loadAdminOverview();
+}
+
+async function loadAdminOverview() {
   $('admRank').replaceChildren('Ваш ранг: ', el('b', null, RANK_NAMES[S.me.rank] || S.me.rank));
-  $('admMarketForm').classList.toggle('hidden', !hasRank('admin'));
-  $('admVerifSection').classList.toggle('hidden', !hasRank('moder'));
-  if (hasRank('moder')) loadAdminVerifications();
-  loadAdminMarket();
+  const card = (n, label) => { const c = el('div', 'stat-card'); c.append(el('b', null, n), el('span', null, label)); return c; };
+  const link = (icon, title, sub, sec) => {
+    const b = el('button', 'adm-link');
+    b.innerHTML = icon;
+    b.firstChild.classList.add('ic');
+    const t = el('div');
+    t.append(el('b', null, title), el('span', null, sub));
+    b.append(t);
+    b.insertAdjacentHTML('beforeend', '<svg class="chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>');
+    b.onclick = () => go('admin/' + sec);
+    return b;
+  };
   try {
-    const s = await api('/api/admin/stats');
-    const card = (n, label) => { const c = el('div', 'stat-card'); c.append(el('b', null, n), el('span', null, label)); return c; };
-    $('admStats').replaceChildren(card(s.users, 'пользователей'), card(s.online, 'онлайн сейчас'), card(s.posts, 'постов'), card(s.communities, 'сообществ'));
+    const [st, verifs, lots] = await Promise.all([
+      api('/api/admin/stats'),
+      hasRank('moder') ? api('/api/admin/verifications') : Promise.resolve(null),
+      api('/api/market'),
+    ]);
+    $('admStats').replaceChildren(card(st.users, 'пользователей'), card(st.online, 'онлайн сейчас'), card(st.posts, 'постов'), card(st.communities, 'сообществ'));
+    const links = [];
+    if (verifs) links.push(link('<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>',
+      tr('Заявки на верификацию'), verifs.length ? L(`Новых: ${verifs.length}`, `New: ${verifs.length}`) : tr('Новых заявок нет'), 'verif'));
+    links.push(link('<svg viewBox="0 0 24 24"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z"/><circle cx="7" cy="7" r="1.5"/></svg>',
+      tr('Юзернеймы площадки'), L(`Лотов сейчас: ${lots.length}`, `Active lots: ${lots.length}`), 'names'));
+    $('admLinks').replaceChildren(...links);
   } catch (e) { $('admStats').replaceChildren(el('div', 'hint', e.message)); }
 }
 
@@ -3147,6 +3523,9 @@ function onEvent(ev) {
     case 'post_del': removePost(ev.p); break;
     case 'comm_del': onCommunityDeleted(ev.id); break;
     case 'media': onMediaReady(ev.m); break;
+    case 'reposts': { const p = S.posts.get(ev.p); if (p) { p.reposts = ev.n; repaintPost(ev.p); } break; }
+    case 'comment': onComment(ev.c); break;
+    case 'comment_del': onCommentDeleted(ev.id, ev.p); break;
     case 'likes': {
       const p = S.posts.get(ev.p);
       if (p) { p.likes = ev.n; repaintPost(ev.p); }
@@ -3409,7 +3788,8 @@ function renderMsgs(forceBottom = false, keepPosition = false) {
     const day = new Date(m.created).toDateString();
     if (day !== lastDay) { wrap.append(el('div', 'day', dayLabel(m.created))); lastDay = day; }
     const mine = isMine(c, m);
-    const node = el('div', 'msg' + (mine ? ' mine' : '') + (m.pending ? ' pending' : '') + (m.failed ? ' failed' : ''), m.body);
+    const node = el('div', 'msg' + (mine ? ' mine' : '') + (m.pending ? ' pending' : '') + (m.failed ? ' failed' : ''));
+    linkify(node, m.body);
     const info = el('span', 'info', hm(m.created));
     if (mine) {
       let tick;
@@ -3478,6 +3858,12 @@ function sendMsg() {
   dispatchPending(p);
   renderMsgs(true);
   if (DEVICE === 'phone') $('input').focus();
+}
+
+function sendTextTo(chatId, body) {
+  const p = { cid: newCid(), chat_id: chatId, user_id: S.me.id, body, created: Date.now(), pending: true };
+  S.pending.set(p.cid, p);
+  dispatchPending(p);
 }
 
 function dispatchPending(p) {
