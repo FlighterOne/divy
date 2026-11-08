@@ -15,29 +15,32 @@
   else if (matchMedia('(pointer:coarse)').matches && Math.min(screen.width, screen.height) < 600) phone = true;
   document.documentElement.dataset.device = phone ? 'phone' : 'pc';
   // Тема и язык из настроек клиента — тоже до отрисовки
-  var theme = 'dark', lang = 'ru';
-  try { theme = localStorage.getItem('divy_theme') || 'dark'; lang = localStorage.getItem('divy_lang') || 'ru'; } catch (e) {}
-  document.documentElement.dataset.theme = theme === 'light' ? 'light' : 'dark';
+  var theme = 'light', lang = 'ru';
+  try { theme = localStorage.getItem('divy_theme') || 'light'; lang = localStorage.getItem('divy_lang') || 'ru'; } catch (e) {}
+  document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : 'light';
   document.documentElement.lang = lang === 'en' ? 'en' : 'ru';
-  if (theme === 'light') document.querySelector('meta[name=theme-color]').content = '#f4f5f7';
+  document.querySelector('meta[name=theme-color]').content = theme === 'dark' ? '#0e0e10' : '#e8e8ea';
 })();
 </script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:#0f1115; --panel:#161a21; --panel2:#1d222b; --line:#262c37;
-  --text:#e8ebf0; --muted:#8a93a3; --accent:#5b8cff;
-  --mine:#2b4a8f; --theirs:#1f252f; --danger:#ff6b6b; --ok:#3ecf8e;
-  --bar:rgba(15,17,21,.86); --msg-meta:rgba(255,255,255,.55); --tick-read:#9fc0ff; --mine-text:#e8ebf0;
+  --bg:#e8e8ea; --panel:#ffffff; --panel2:#f0f0f2; --line:#d6d6da;
+  --text:#0c0c0e; --muted:#6b6b72; --accent:#1238e6;
+  --mine:#7d9cff; --theirs:#d9d9dc; --danger:#e5292f; --ok:#1f9d63;
+  --bar:rgba(232,232,234,.94); --msg-meta:#55555c; --tick-read:#1238e6; --mine-text:#0c0c0e;
+  --pill:#e4e4e8;
 }
-/* светлая тема */
-:root[data-theme=light] {
-  --bg:#f4f5f7; --panel:#ffffff; --panel2:#eef0f3; --line:#dfe2e8;
-  --text:#14171c; --muted:#677080; --accent:#3d6ef0;
-  --mine:#3d6ef0; --theirs:#ffffff; --danger:#e5484d; --ok:#22a06b;
-  --bar:rgba(255,255,255,.88); --msg-meta:rgba(255,255,255,.75); --tick-read:#ffffff; --mine-text:#ffffff;
+/* тёмная тема: то же самое, белое → тёмное, тёмный текст → белый, синий остаётся */
+:root[data-theme=dark] {
+  --bg:#0e0e10; --panel:#1b1b1f; --panel2:#26262b; --line:#2f2f35;
+  --text:#f3f3f5; --muted:#9b9ba3; --accent:#3d5cff;
+  --mine:#3d5cff; --theirs:#2a2a30; --danger:#ff5a5f; --ok:#3ecf8e;
+  --bar:rgba(14,14,16,.94); --msg-meta:#a8a8b0; --tick-read:#8ea6ff; --mine-text:#ffffff;
+  --pill:#2c2c32;
 }
-:root[data-theme=light] .msg:not(.mine) .info { color:var(--muted) }
-:root[data-theme=light] .msg:not(.mine) { border:1px solid var(--line) }
 :root[data-theme=light] .modal { background:rgba(20,23,28,.35) }
 * { box-sizing:border-box; margin:0; padding:0 }
 html, body { height:100% }
@@ -448,6 +451,376 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
 [data-device=phone] #input { font-size:16px }
 [data-device=phone] .ava.big { width:76px; height:76px; font-size:30px }
 [data-device=phone] .prof-btns .btn.small { padding:6px 12px }
+/* ================= НОВЫЙ ДИЗАЙН (по макетам из Figma) ================= */
+body { font-family:'Nunito', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-weight:600 }
+button, input, textarea { font-family:inherit }
+.card { background:var(--panel); border-radius:22px; margin:0 10px 10px; overflow:hidden }
+.col .card { width:auto; max-width:none; border:0 }
+.col .card.info-card, .col .card.tabs-card { padding:0 }
+
+/* шапка раздела: ⬡ слева, заголовок по центру, иконки справа, тонкая линия снизу */
+.vhead { position:sticky; top:0; z-index:6; display:grid; grid-template-columns:52px 1fr 76px; align-items:center;
+  padding:calc(10px + env(safe-area-inset-top)) 10px 8px; background:var(--bar); border-bottom:1.5px solid var(--line);
+  -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); transition:transform .25s ease }
+.vhead h1 { text-align:center; font-size:24px; font-weight:800; letter-spacing:-.3px; grid-column:2; grid-row:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+.vhead > .vh-btn:first-child, .vhead > #datingBack { grid-column:1; grid-row:1 }
+.vh-right { grid-column:3; grid-row:1; display:flex; justify-content:flex-end; gap:2px }
+.vh-btn { width:38px; height:38px; border-radius:50%; display:grid; place-items:center; color:var(--text) }
+.vh-btn:hover { background:var(--panel2) }
+.vh-btn svg { width:25px; height:25px; stroke-width:2.2 }
+#vFeed.bars-hidden .feed-head { transform:translateY(-100%) }
+.feed-head { display:grid }
+
+/* Пост · История · Видео */
+.create-row { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; padding:10px 10px 8px }
+.create-tile { height:64px; border-radius:16px; color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; box-shadow:0 4px 12px rgba(18,56,230,.18) }
+.create-tile b { font-size:17px; font-weight:800 }
+.create-tile svg { width:20px; height:20px; stroke-width:2.4; color:rgba(255,255,255,.9) }
+.create-tile:active { transform:scale(.97) }
+.t-post { background:linear-gradient(135deg, #4d73ff, #1532d6) }
+.t-story { background:linear-gradient(135deg, #3fd0ff, #1a8fe8) }
+.t-video { background:linear-gradient(135deg, #8a95ff, #5b62e0) }
+
+/* ---------- карточка поста ---------- */
+.post2 { background:var(--panel); border-radius:22px; margin:0 10px 10px; overflow:hidden }
+.p2-head { display:flex; align-items:center; gap:10px; padding:10px 8px 8px 12px }
+.p2-head .ava { width:38px; height:38px; font-size:15px; cursor:pointer }
+.p2-who { flex:1; min-width:0; cursor:pointer; line-height:1.15 }
+.p2-name { display:flex; align-items:center; gap:5px; font-weight:800; font-size:16.5px; min-width:0 }
+.p2-name span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.p2-handle { color:var(--muted); font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.follow-pill { background:var(--pill); color:var(--text); font-weight:800; font-size:13.5px; padding:5px 10px; border-radius:12px; flex-shrink:0 }
+.follow-pill.following { color:var(--muted) }
+.dots-btn { width:28px; height:34px; display:grid; place-items:center; color:var(--text); flex-shrink:0 }
+.dots-btn svg { width:22px; height:22px; fill:currentColor; stroke:none }
+.post2 .car { margin:0; border:0; border-radius:0; max-height:none }
+.p2-text { padding:10px 12px 0; font-size:17px; font-weight:600; white-space:pre-wrap; overflow-wrap:anywhere }
+.p2-text.clamp { display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; white-space:normal }
+.p2-more { color:var(--muted); font-weight:700; font-size:17px; padding:0 12px; margin-top:-1px }
+.p2-row { display:flex; align-items:baseline; gap:4px; min-width:0 }
+.p2-row .p2-text.clamp { flex:1; min-width:0; padding-right:0 }
+.p2-acts { display:flex; gap:14px; padding:8px 12px 10px; border-top:1.5px solid var(--line); margin-top:8px }
+.p2-acts .act { padding:2px; gap:4px; font-size:16px; font-weight:700; color:var(--text); border-radius:8px; margin:0 }
+.p2-acts .act svg { width:21px; height:21px; stroke-width:2.1 }
+.p2-acts .act:hover { background:none }
+.p2-acts .act.liked { color:var(--danger) }
+.p2-acts .act.liked svg { fill:currentColor }
+.p2-acts .act.rep svg { transform:none }
+.p2-acts .act.rep.on { color:var(--ok) }
+.p2-acts .act.save.on svg { fill:currentColor }
+.post2 .comments { margin:0 12px; padding-bottom:10px }
+.post2 .post-main { min-width:0 }
+
+/* видео в посте: обложка, длительность «0:56», кнопка ▶ */
+.vprev { position:relative; width:100%; height:100%; background:#111 center / cover no-repeat; cursor:pointer }
+.vdur { position:absolute; top:12px; left:12px; color:#fff; font-weight:800; font-size:18px; text-shadow:0 1px 4px rgba(0,0,0,.6) }
+.vplay { position:absolute; left:50%; top:50%; width:64px; height:64px; margin:-32px 0 0 -32px; border-radius:50%;
+  background:rgba(120,120,120,.55); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); display:grid; place-items:center }
+.vplay svg { width:30px; height:30px; fill:#fff; stroke:none; margin-left:4px }
+
+/* всплывающее меню */
+.pop { position:fixed; z-index:60; background:var(--panel); border-radius:14px; box-shadow:0 8px 30px rgba(0,0,0,.22); padding:6px; min-width:190px }
+.pop button { width:100%; display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:9px; font-weight:800; font-size:15px; text-align:left; color:var(--text) }
+.pop button:hover { background:var(--panel2) }
+.pop button svg { width:18px; height:18px; stroke-width:2.3; flex-shrink:0 }
+.pop button.danger { color:var(--danger) }
+.pop.icons { min-width:0; padding:5px; display:flex; flex-direction:column; gap:2px }
+.pop.icons button { width:40px; height:38px; padding:0; justify-content:center }
+.pop.icons button svg { width:24px; height:24px }
+
+/* ---------- профиль ---------- */
+.prof2-top { display:flex; justify-content:space-between; padding:calc(14px + env(safe-area-inset-top)) 12px 0 }
+.pill-btn { background:var(--panel); border-radius:14px; height:30px; min-width:52px; padding:0 12px; display:grid; place-items:center;
+  font-weight:800; font-size:15px; box-shadow:0 1px 3px rgba(0,0,0,.08); color:var(--text) }
+.pill-btn svg { width:20px; height:20px; stroke-width:2.4 }
+.prof2-ava { width:112px; height:112px; font-size:44px; margin:-10px auto 10px }
+.prof2-ava.on::after { width:18px; height:18px; border-width:3px; border-color:var(--bg); right:6px; bottom:6px }
+.prof2-name { display:flex; align-items:center; justify-content:center; gap:6px; font-size:25px; font-weight:900; padding:0 16px; text-align:center }
+.prof2-name .verified { width:20px; height:20px }
+.prof2-name .verified svg { width:13px; height:13px }
+.prof2-more { width:30px; height:24px; border-radius:10px; background:var(--panel); display:grid; place-items:center; box-shadow:0 1px 3px rgba(0,0,0,.1) }
+.prof2-more svg { width:18px; height:18px; stroke-width:2.6 }
+.prof2-sub { text-align:center; color:var(--muted); font-size:13px; font-weight:700; margin:2px 0 12px }
+.prof2-sub b { color:var(--text); font-weight:700 }
+.prof2-sub .sep { display:inline-block; width:1.5px; height:13px; background:var(--muted); margin:0 6px -2px }
+.stats-card { display:grid; grid-template-columns:repeat(3, 1fr); padding:8px 4px }
+.stats-card div { text-align:center; font-weight:800; font-size:16px; line-height:1.25 }
+.stats-card div + div { border-left:1.5px solid var(--line) }
+.stats-card b { display:block; font-size:17px; font-weight:800 }
+.info-card .irow { padding:10px 14px }
+.info-card .irow + .irow { border-top:1.5px solid var(--line) }
+.irow-v { font-size:17px; font-weight:800; white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.25 }
+.irow-l { color:var(--muted); font-size:14.5px; font-weight:800 }
+.ptabs2 { display:flex; justify-content:space-around; padding:6px 4px; border-bottom:1.5px solid var(--line) }
+.ptabs2 button { width:48px; height:38px; display:grid; place-items:center; color:var(--text); border-radius:10px }
+.ptabs2 button svg { width:25px; height:25px; stroke-width:2 }
+.ptabs2 button.on { color:var(--accent) }
+.ptabs2 button.on svg { fill:currentColor; stroke:currentColor }
+.ptabs2 button.on svg path[d^="M4 10"], .ptabs2 button.on svg path[d^="M12 15"] { stroke:var(--panel) }
+.tabs-card .loader { padding:28px 16px; color:var(--muted); font-size:17px; font-weight:800; text-align:center }
+.tabs-card .loader:empty { padding:0 }
+.tabs-card .post2 { margin:0; border-radius:0; border-bottom:1.5px solid var(--line) }
+.prof-edit { padding:0 12px 12px }
+.prof-edit .field-label { margin-top:6px }
+
+/* ---------- уведомления ---------- */
+.chips-row { display:flex; gap:6px; padding:10px 10px 6px; overflow-x:auto }
+.chips-row button { padding:5px 12px; border-radius:16px; background:var(--panel); font-weight:800; font-size:16px; color:var(--text); white-space:nowrap }
+.chips-row button.on { background:var(--accent); color:#fff }
+.nrow { display:flex; align-items:center; gap:10px; padding:6px 10px; cursor:pointer; border-bottom:1px solid var(--line) }
+.nrow:hover { background:var(--panel2) }
+.nrow .ava { width:34px; height:34px; font-size:14px }
+.ntext { flex:1; min-width:0; font-size:15.5px; font-weight:600; line-height:1.2; overflow-wrap:anywhere }
+.ntext b { font-weight:700 }
+.nrow.unseen { background:rgba(18,56,230,.06) }
+.nrow .btn.small { flex-shrink:0 }
+.nav-dot { position:absolute; top:9px; right:14px; width:8px; height:8px; border-radius:50%; background:var(--accent); border:2px solid var(--panel) }
+
+/* ---------- поиск ---------- */
+.search2 { display:flex; align-items:center; gap:8px; margin:10px 10px 8px; background:var(--panel); border-radius:18px; padding:0 14px; height:42px }
+.search2 svg { width:21px; height:21px; stroke-width:2.6; flex-shrink:0 }
+.search2 input { flex:1; min-width:0; border:0; outline:none; background:none; font-size:18px; font-weight:700; color:var(--text) }
+.search2 input::placeholder { color:var(--muted) }
+.sect-title { font-size:19px; font-weight:900; padding:8px 14px 2px }
+
+/* ---------- список чатов ---------- */
+#side { background:var(--bg) }
+.side-head { margin-bottom:0 }
+.priv-card { display:flex; align-items:center; justify-content:space-between; gap:10px; width:calc(100% - 20px); margin:0 10px 6px;
+  background:var(--panel); border-radius:20px; padding:10px 16px; text-align:left }
+.priv-card b { display:block; font-size:19px; font-weight:900 }
+.priv-card span { color:var(--text); font-size:13px; font-weight:700 }
+.priv-card svg { width:24px; height:24px; stroke-width:2.2 }
+.chat2 { display:flex; align-items:center; gap:10px; padding:7px 10px; cursor:pointer; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none }
+.chat2:hover { background:rgba(0,0,0,.035) }
+:root[data-theme=dark] .chat2:hover { background:rgba(255,255,255,.04) }
+.chat2.on { background:rgba(18,56,230,.08) }
+.chat2 .ava { width:44px; height:44px; font-size:17px }
+.c2-main { flex:1; min-width:0 }
+.c2-name { font-weight:800; font-size:17px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.2 }
+.c2-prev { color:var(--muted); font-size:14.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.c2-prev b { color:var(--text); font-weight:700 }
+.c2-prev.typing { color:var(--accent) }
+.c2-side { display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0 }
+.c2-top { display:flex; align-items:center; gap:4px }
+.c2-top svg { width:13px; height:13px; stroke-width:2.4 }
+.c2-time { background:var(--pill); border-radius:8px; padding:0 6px; font-size:12px; font-weight:800; line-height:16px }
+.c2-badge { min-width:20px; height:20px; border-radius:10px; background:var(--accent); color:#fff; font-size:12.5px; font-weight:800; display:grid; place-items:center; padding:0 5px }
+.c2-badge.muted { background:var(--muted) }
+.c2-ticks { font-size:13px; font-weight:800; color:var(--muted); letter-spacing:-2px; padding-right:2px }
+.c2-ticks.read { color:var(--accent) }
+.pin-group { background:var(--pill); border-radius:20px; margin:0 4px 4px; overflow:hidden }
+.chat2 .sel { width:22px; height:22px; border-radius:50%; border:2px solid var(--muted); flex-shrink:0 }
+.chat2.selected .sel { background:var(--accent); border-color:var(--accent); box-shadow:inset 0 0 0 3px var(--panel) }
+.sel-bar { position:sticky; bottom:0; display:flex; gap:10px; padding:10px; background:var(--bar) }
+.sel-bar button { flex:1; padding:11px; border-radius:14px; background:var(--panel); font-weight:800 }
+.sel-bar .danger { background:var(--danger); color:#fff }
+
+/* ---------- открытый чат ---------- */
+#main { background:linear-gradient(180deg, var(--bg), var(--panel2)) }
+.chat-head2 { display:grid; grid-template-columns:52px 1fr 52px; align-items:center; padding:calc(8px + env(safe-area-inset-top)) 10px 8px;
+  background:linear-gradient(180deg, var(--panel2), transparent) }
+.back2 { position:relative; width:40px; height:40px; display:grid; place-items:center; color:var(--text) }
+.back2 svg { width:28px; height:28px; stroke-width:2.6 }
+.back-badge { position:absolute; top:0; left:20px; min-width:18px; height:18px; border-radius:9px; background:var(--accent); color:#fff; font-size:11px; font-weight:800; display:grid; place-items:center; padding:0 4px }
+.ch-center { text-align:center; min-width:0 }
+.ch-center .title { font-size:17px; font-weight:900; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.ch-center .status { font-size:12.5px; font-weight:700; color:var(--muted) }
+.ch-center .status.typing, .ch-center .status.online { color:var(--accent) }
+.chat-head2 .ava { width:40px; height:40px; font-size:16px; justify-self:end; cursor:pointer }
+#msgs { gap:6px; padding:12px 12px 8px }
+#msgs .day { background:none; color:var(--muted); font-weight:800; font-size:14px; margin:14px 0 8px }
+.mrow { display:flex; align-items:flex-end; gap:6px; max-width:100% }
+.mrow.mine { justify-content:flex-end }
+.mtime { font-size:11.5px; font-weight:800; color:var(--text); flex-shrink:0; padding-bottom:2px }
+.mtime.fail { color:var(--danger); cursor:pointer }
+.bub { max-width:min(72%, 520px); padding:7px 12px; border-radius:16px; background:var(--theirs); color:var(--text); font-size:16.5px; font-weight:600;
+  white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.28 }
+.mrow.mine .bub { background:var(--mine); color:var(--mine-text) }
+.mrow.pending .bub { opacity:.75 }
+.bub.media { padding:4px; overflow:hidden }
+.bub img, .bub video, .bub .vprev { display:block; width:240px; max-width:100%; border-radius:12px; max-height:320px; object-fit:cover }
+.bub .vprev { height:180px }
+.bub .cap { padding:5px 8px 2px }
+/* голосовое */
+.voice { display:flex; align-items:center; gap:8px; min-width:190px; padding:2px 0 }
+.voice button { width:34px; height:34px; border-radius:50%; background:var(--accent); color:#fff; display:grid; place-items:center; flex-shrink:0 }
+.mrow.mine .voice button { background:#fff; color:var(--accent) }
+.voice button svg { width:16px; height:16px; fill:currentColor; stroke:none }
+.vbar { flex:1; height:4px; border-radius:2px; background:rgba(0,0,0,.18); overflow:hidden }
+.vbar i { display:block; height:100%; width:0; background:currentColor }
+.vtime { font-size:12px; font-weight:800 }
+/* поле ввода */
+#composer { display:block; border:0; background:none; padding:6px 10px calc(10px + env(safe-area-inset-bottom)) }
+.comp-bar { display:flex; align-items:flex-end; gap:4px; background:var(--panel); border-radius:22px; padding:4px 4px 4px 8px; box-shadow:0 2px 10px rgba(0,0,0,.08) }
+#composer #input { flex:1; border:0; background:none; padding:9px 4px; border-radius:0; font-size:17px; font-weight:600; max-height:140px; color:var(--text) }
+#composer #input::placeholder { color:var(--muted) }
+.cbtn { width:36px; height:38px; display:grid; place-items:center; color:var(--muted); flex-shrink:0 }
+.cbtn svg { width:22px; height:22px; stroke-width:2.1 }
+.send2 { width:38px; height:38px; border-radius:50%; background:var(--accent); color:#fff; display:grid; place-items:center; flex-shrink:0 }
+.send2 svg { width:20px; height:20px; stroke-width:2.3 }
+.emoji-panel { display:grid; grid-template-columns:repeat(8, 1fr); gap:2px; margin:0 10px; padding:8px; background:var(--panel); border-radius:18px; max-height:180px; overflow-y:auto }
+.emoji-panel button { font-size:24px; height:38px; border-radius:8px }
+.emoji-panel button:hover { background:var(--panel2) }
+.rec-bar { display:flex; align-items:center; gap:10px; background:var(--panel); border-radius:22px; padding:6px 6px 6px 16px; font-weight:800 }
+.rec-dot { width:10px; height:10px; border-radius:50%; background:var(--danger); animation:blink 1s infinite }
+@keyframes blink { 50% { opacity:.3 } }
+.rec-cancel { margin-left:auto; color:var(--muted); font-weight:800; padding:6px 8px }
+
+/* ---------- код «Личных» ---------- */
+.pin-overlay { position:fixed; inset:0; z-index:70; display:grid; place-items:center; background:rgba(232,232,234,.55);
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px) }
+:root[data-theme=dark] .pin-overlay { background:rgba(14,14,16,.55) }
+.pin-box { text-align:center }
+.pin-title { font-size:24px; font-weight:900; margin-bottom:8px }
+.pin-dots { display:flex; justify-content:center; gap:10px; margin-bottom:14px }
+.pin-dots i { width:12px; height:12px; border-radius:50%; border:2px solid var(--text) }
+.pin-dots i.on { background:var(--text) }
+.pin-pad { display:grid; grid-template-columns:repeat(3, 58px); gap:8px; justify-content:center }
+.pin-pad button { height:50px; border-radius:14px; background:var(--panel); font-size:28px; font-weight:800; box-shadow:0 2px 8px rgba(0,0,0,.1); color:var(--text) }
+.pin-pad button:active { transform:scale(.95) }
+.pin-pad .zero { grid-column:2 }
+.pin-err { color:var(--danger); font-weight:800; min-height:22px; margin-top:10px }
+
+/* приватный пост в окне публикации */
+.priv-toggle { display:flex; align-items:center; gap:5px; color:var(--muted); font-size:13.5px; font-weight:800; cursor:pointer; margin-right:auto }
+.priv-toggle input { display:none }
+.priv-toggle svg { width:17px; height:17px; stroke-width:2.3 }
+.priv-toggle:has(input:checked) { color:var(--accent) }
+.attach-tools { margin-right:0 }
+
+/* ---------- нижнее меню (телефон) ---------- */
+#nav { background:var(--panel) }
+.nav-btn { color:var(--text) }
+.nav-btn svg { width:28px; height:28px; stroke-width:2 }
+.nav-btn.on { color:var(--accent); background:none }
+.nav-btn.on svg { fill:currentColor }
+.nav-btn.on svg .fg { stroke:var(--panel) }
+.nav-btn .ava { width:32px; height:32px }
+.nav-btn.on .ava { box-shadow:0 0 0 2.5px var(--panel), 0 0 0 4.5px var(--accent) }
+[data-device=phone] #nav { border-top:1.5px solid var(--line); padding:6px 0 calc(6px + env(safe-area-inset-bottom)) }
+[data-device=phone] .nav-btn { width:64px; height:44px }
+[data-device=phone] .nav-btn.on { background:none }
+[data-device=phone] .col { max-width:none }
+[data-device=phone] #createBtn { display:none }
+.col { border:0 }
+.view { background:var(--bg) }
+
+
+/* ================= ПК-ВЕРСИЯ в стиле мобильного дизайна ================= */
+[data-device=phone] .nav-logo { display:none }
+/* левая панель: логотип сверху, те же 4 кнопки по центру, панель администратора снизу */
+[data-device=pc] #nav { width:92px; gap:14px; border-right:1.5px solid var(--line) }
+[data-device=pc] .nav-logo { top:22px; font-size:27px; font-weight:900; letter-spacing:-1.2px; cursor:pointer }
+[data-device=pc] .nav-logo span { color:var(--accent) }
+[data-device=pc] .nav-btn { width:58px; height:52px; border-radius:16px }
+[data-device=pc] .nav-btn:hover { background:var(--panel2); color:var(--text) }
+[data-device=pc] .nav-btn.on, [data-device=pc] .nav-btn.on:hover { background:rgba(18,56,230,.09); color:var(--accent) }
+[data-device=pc] .nav-btn .ava { width:36px; height:36px }
+[data-device=pc] .nav-dot { top:11px; right:15px }
+[data-device=pc] .nav-badge { top:4px; right:6px }
+[data-device=pc] .nav-admin { left:17px; bottom:22px }
+/* подсказка-название справа от иконки при наведении */
+[data-device=pc] .nav-btn[title]:hover::before { content:attr(title); position:absolute; left:calc(100% + 10px); top:50%; transform:translateY(-50%);
+  background:var(--text); color:var(--panel); font-size:13px; font-weight:800; padding:5px 10px; border-radius:10px; white-space:nowrap; pointer-events:none; z-index:30 }
+[data-device=pc] #nav { z-index:25 }
+
+/* колонка контента: по центру, без рамок, карточки со скруглением как на телефоне */
+[data-device=pc] .col { max-width:680px; padding:0 0 32px }
+[data-device=pc] .vhead { padding:14px 12px 10px; grid-template-columns:60px 1fr 92px; border-radius:0 0 22px 22px; border-bottom:0;
+  box-shadow:0 1.5px 0 var(--line) }
+[data-device=pc] .vhead h1 { font-size:26px }
+[data-device=pc] .vh-btn { width:42px; height:42px }
+[data-device=pc] .card, [data-device=pc] .post2 { margin:0 12px 14px }
+[data-device=pc] .create-row { gap:12px; padding:14px 12px 12px }
+[data-device=pc] .create-tile { height:78px; border-radius:20px; transition:transform .15s, box-shadow .15s }
+[data-device=pc] .create-tile:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(18,56,230,.28) }
+[data-device=pc] .create-tile b { font-size:19px }
+[data-device=pc] .create-tile svg { width:22px; height:22px }
+
+/* пост */
+[data-device=pc] .p2-head { padding:14px 12px 10px 16px; gap:12px }
+[data-device=pc] .p2-head .ava { width:44px; height:44px; font-size:17px }
+[data-device=pc] .post2 .car { max-height:640px }
+[data-device=pc] .p2-text { padding:12px 16px 0 }
+[data-device=pc] .p2-more { padding:0 16px; cursor:pointer }
+[data-device=pc] .p2-more:hover { color:var(--accent) }
+[data-device=pc] .p2-acts { gap:20px; padding:10px 16px 12px }
+[data-device=pc] .p2-acts .act { cursor:pointer; transition:color .15s }
+[data-device=pc] .p2-acts .act:hover { color:var(--accent) }
+[data-device=pc] .p2-acts .act.like:hover, [data-device=pc] .p2-acts .act.liked { color:var(--danger) }
+[data-device=pc] .follow-pill:hover { filter:brightness(.95) }
+[data-device=pc] .dots-btn { border-radius:10px }
+[data-device=pc] .dots-btn:hover { background:var(--panel2) }
+[data-device=pc] .vprev:hover .vplay { background:rgba(18,56,230,.75) }
+[data-device=pc] .post2 .comments { margin:0 16px }
+
+/* профиль: слева карточка профиля (закреплена), справа вкладки и публикации */
+[data-device=pc] .prof2-top { padding:16px 12px 0 }
+[data-device=pc] .pill-btn:hover { background:var(--panel2) }
+@media (min-width:1100px) {
+  [data-device=pc] #vProfile .col { max-width:1080px; display:grid; grid-template-columns:380px minmax(0, 1fr); grid-template-rows:auto auto 1fr; column-gap:6px; align-items:start; padding-top:16px }
+  [data-device=pc] #vProfile .prof2-top { grid-column:1; grid-row:1; padding-top:0 }
+  [data-device=pc] #vProfile #profHead { grid-column:1; grid-row:2; position:sticky; top:16px }
+  [data-device=pc] #vProfile #profTabsCard { grid-column:2; grid-row:1 / span 3 }
+  [data-device=pc] #vProfile #profComms { grid-column:2 }
+  [data-device=pc] #vProfile .ptabs2 { position:sticky; top:0; z-index:3; background:var(--panel) }
+}
+[data-device=pc] .ptabs2 button { width:56px; height:42px; cursor:pointer }
+[data-device=pc] .ptabs2 button:hover { background:var(--panel2) }
+
+/* уведомления и поиск */
+[data-device=pc] .chips-row { padding:12px 12px 8px; gap:8px }
+[data-device=pc] .chips-row button { cursor:pointer }
+[data-device=pc] .chips-row button:hover:not(.on) { background:var(--panel2) }
+[data-device=pc] #notifList, [data-device=pc] #gResults { background:var(--panel); border-radius:22px; margin:0 12px; overflow:hidden }
+[data-device=pc] #notifList:empty, [data-device=pc] #gResults:empty { display:none }
+[data-device=pc] .nrow { padding:10px 16px }
+[data-device=pc] .nrow .ava { width:40px; height:40px; font-size:15px }
+[data-device=pc] .search2 { margin:12px 12px 10px; height:46px }
+[data-device=pc] #gResults .chat2 { padding:9px 16px }
+[data-device=pc] #gResults .empty, [data-device=pc] #notifList .empty { padding:28px 16px }
+
+/* чаты: список слева, открытый чат справа */
+[data-device=pc] #side { width:390px; border-right:1.5px solid var(--line); display:flex; flex-direction:column }
+[data-device=pc] #side .vhead { border-radius:0; box-shadow:none; border-bottom:0 }
+[data-device=pc] #side #list { flex:1; overflow-y:auto; padding:0 6px 8px }
+[data-device=pc] #side .chat2 { border-radius:16px; padding:8px 10px }
+[data-device=pc] #side .pin-group { margin:0 0 4px }
+[data-device=pc] #side .pin-group .chat2 { border-radius:0 }
+[data-device=pc] .priv-card { cursor:pointer; transition:box-shadow .15s }
+[data-device=pc] .priv-card:hover { box-shadow:0 2px 12px rgba(0,0,0,.08) }
+[data-device=pc] .chat2.on { background:rgba(18,56,230,.10) }
+[data-device=pc] .chat2.on .c2-name { color:var(--accent) }
+[data-device=pc] #placeholder { font-size:16px; font-weight:800; align-content:center }
+[data-device=pc] #placeholder::before { content:""; display:block; width:84px; height:84px; margin:0 auto 14px; border-radius:26px; background:var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231238e6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='3.5' width='17' height='17' rx='6'/%3E%3Cpath d='M8.5 10h7M8.5 14h4.5'/%3E%3C/svg%3E") center / 44px no-repeat; box-shadow:0 4px 16px rgba(0,0,0,.06) }
+html:not(.compact)[data-device=pc] .chat-head2 { padding:12px 18px 10px; background:var(--panel); border-bottom:1.5px solid var(--line) }
+.chat-head2 .ch-center { grid-column:2 }
+.chat-head2 #peerAva { grid-column:3 }
+[data-device=pc] .ch-center .title { font-size:18px }
+[data-device=pc] #msgs { padding:16px 28px 10px; gap:7px }
+[data-device=pc] .bub { max-width:min(62%, 560px) }
+[data-device=pc] #composer { padding:8px 28px 18px }
+[data-device=pc] .comp-bar { padding:5px 5px 5px 10px }
+[data-device=pc] .cbtn { cursor:pointer; border-radius:50% }
+[data-device=pc] .cbtn:hover { color:var(--accent) }
+[data-device=pc] .send2 { cursor:pointer }
+[data-device=pc] .send2:hover { filter:brightness(1.12) }
+[data-device=pc] .emoji-panel { margin:0 28px; grid-template-columns:repeat(12, 1fr); max-width:560px }
+
+/* код «Личных» — крупнее на ПК */
+[data-device=pc] .pin-pad { grid-template-columns:repeat(3, 70px); gap:10px }
+[data-device=pc] .pin-pad button { height:58px; cursor:pointer }
+[data-device=pc] .pin-pad button:hover { background:var(--panel2) }
+[data-device=pc] .pin-title { font-size:28px }
+[data-device=pc] .pin-dots i { width:14px; height:14px }
+
+/* меню ⋮ / правый клик */
+[data-device=pc] .pop button { cursor:pointer; padding:8px 12px }
+
+/* старые разделы (сообщество, пост, админка) — в тех же цветах и скруглениях */
+[data-device=pc] .top { border-radius:0 0 22px 22px; border-bottom:0; box-shadow:0 1.5px 0 var(--line) }
+[data-device=pc] .top h1 { font-size:24px; font-weight:900; padding:16px 16px 6px }
 </style>
 </head>
 <body>
@@ -475,12 +848,17 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
 <!-- ================= Приложение ================= -->
 <section id="app" class="hidden">
   <nav id="nav">
+    <div class="nav-logo" id="navLogo">div<span>y</span></div>
     <button class="nav-btn" data-go="feed" title="Главная">
-      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M3.5 10.2L12 3.5l8.5 6.7V20a1 1 0 0 1-1 1h-5v-6.2h-5V21h-5a1 1 0 0 1-1-1z"/></svg>
     </button>
-    <button class="nav-btn" data-go="messages" title="Сообщения">
-      <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+    <button class="nav-btn" data-go="messages" title="Чаты">
+      <svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="6"/><path class="fg" d="M8.5 10h7M8.5 14h4.5"/></svg>
       <span class="nav-badge hidden" id="navBadge"></span>
+    </button>
+    <button class="nav-btn" data-go="notifications" title="Уведомления">
+      <svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 6.5-2.5 8.5-2.5 8.5h17S18 15.5 18 9"/><path d="M13.8 20.5a2 2 0 0 1-3.6 0"/></svg>
+      <span class="nav-dot hidden" id="notifDot"></span>
     </button>
     <button class="nav-btn" data-go="me" title="Профиль">
       <div class="ava" id="navAva"></div>
@@ -495,20 +873,27 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
     <!-- Лента -->
     <section class="view" id="vFeed">
       <div class="col">
-        <div class="feed-head">
-          <div class="brand-row"><div class="brand" id="brand" title="Наверх">div<span>y</span></div></div>
-          <!-- Главная: режимы «Лента» и «Знакомства» -->
-          <div class="ptabs home-tabs" id="homeTabs">
-            <button data-mode="feed" class="on">Лента</button>
-            <button data-mode="dating">Знакомства</button>
-          </div>
-          <!-- подменю знакомств -->
-          <div class="dating-menu hidden" id="datingMenu">
-            <button data-page="me"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Моя анкета</button>
-            <button data-page="fav"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>Избранное</button>
-            <button data-page="filters"><svg viewBox="0 0 24 24"><path d="M22 3H2l8 9.5V19l4 2v-8.5L22 3z"/></svg>Фильтры</button>
+        <div class="vhead feed-head" id="feedHead">
+          <button class="vh-btn js-gear" id="feedGear" title="Настройки"><svg viewBox="0 0 24 24"><path d="M12 2.6l8.1 4.7v9.4L12 21.4l-8.1-4.7V7.3z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          <button class="vh-btn hidden" id="datingBack" title="Назад"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <h1 id="feedTitle">Главная</h1>
+          <div class="vh-right" id="feedRight">
+            <button class="vh-btn" id="feedSearchBtn" title="Поиск"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5l-4.4-4.4"/></svg></button>
+            <button class="vh-btn" id="feedDatingBtn" title="Знакомства"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 16.6s-4.2-2.7-4.2-5.4A2.3 2.3 0 0 1 12 10a2.3 2.3 0 0 1 4.2 1.2c0 2.7-4.2 5.4-4.2 5.4z"/></svg></button>
           </div>
           <button class="pill hidden" id="newPosts"></button>
+        </div>
+        <!-- Пост · История · Видео -->
+        <div class="create-row" id="createRow">
+          <button class="create-tile t-post" id="cPost"><b>Пост</b><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></button>
+          <button class="create-tile t-story" id="cStory"><b>История</b><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></button>
+          <button class="create-tile t-video" id="cVideo"><b>Видео</b><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></button>
+        </div>
+        <!-- подменю знакомств -->
+        <div class="dating-menu hidden" id="datingMenu">
+          <button data-page="me"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Моя анкета</button>
+          <button data-page="fav"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>Избранное</button>
+          <button data-page="filters"><svg viewBox="0 0 24 24"><path d="M22 3H2l8 9.5V19l4 2v-8.5L22 3z"/></svg>Фильтры</button>
         </div>
         <div id="feedBox">
           <div id="feedList"></div>
@@ -526,29 +911,47 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
     <!-- Сообщения (директ) -->
     <section class="view" id="vMessages">
       <aside id="side">
-        <div class="side-head" id="sideHead">Сообщения</div>
-        <input class="field search" id="search" placeholder="Найти по логину или имени" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <div class="vhead side-head" id="sideHead"></div>
+        <div class="search2"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5l-4.4-4.4"/></svg>
+          <input id="search" placeholder="Поиск чатов" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+        <!-- «Личные» — чаты под кодом -->
+        <button class="priv-card hidden" id="privCard" type="button">
+          <div><b>Личные</b><span id="privSub"></span></div>
+          <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </button>
         <div id="list"></div>
+        <div class="sel-bar hidden" id="selBar">
+          <button type="button" id="selCancel">Отмена</button>
+          <button type="button" class="danger" id="selDelete">Удалить</button>
+        </div>
       </aside>
       <main id="main">
         <div id="placeholder">Выберите чат или найдите собеседника через поиск</div>
         <div id="chat" class="hidden">
-          <div class="chat-head">
-            <button class="icon-btn" id="back" title="Назад">
-              <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-            </button>
-            <div class="ava" id="peerAva"></div>
-            <div class="meta">
+          <div class="chat-head2">
+            <button class="back2" id="back" title="Назад"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg><span class="back-badge hidden" id="backBadge"></span></button>
+            <div class="ch-center">
               <div class="title" id="peerName"></div>
               <div class="status" id="peerStatus"></div>
             </div>
+            <div class="ava" id="peerAva"></div>
           </div>
           <div id="msgs"></div>
+          <div class="emoji-panel hidden" id="emojiPanel"></div>
           <form id="composer">
-            <textarea id="input" rows="1" placeholder="Сообщение" maxlength="4000"></textarea>
-            <button id="send" title="Отправить">
-              <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-            </button>
+            <div class="comp-bar">
+              <button type="button" class="cbtn" id="emojiBtn" title="Эмодзи"><svg viewBox="0 0 24 24"><path d="M15.5 3.5H8a4.5 4.5 0 0 0-4.5 4.5v8A4.5 4.5 0 0 0 8 20.5h4.5l8-8V8a4.5 4.5 0 0 0-4.5-4.5z"/><path d="M12.5 20.5v-4a4 4 0 0 1 4-4h4"/><path d="M9 10h.01M14 10h.01"/></svg></button>
+              <textarea id="input" rows="1" placeholder="Сообщение..." maxlength="4000"></textarea>
+              <button type="button" class="cbtn" id="clipBtn" title="Прикрепить фото или видео"><svg viewBox="0 0 24 24"><path d="M21 11.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/></svg></button>
+              <input type="file" id="clipInput" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime" hidden>
+              <button id="send" class="send2 mic" title="Голосовое сообщение"></button>
+            </div>
+            <!-- запись голосового -->
+            <div class="rec-bar hidden" id="recBar">
+              <span class="rec-dot"></span><span id="recTime">0:00</span>
+              <button type="button" class="rec-cancel" id="recCancel">Отмена</button>
+              <button type="button" class="send2" id="recSend" title="Отправить"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+            </div>
           </form>
         </div>
       </main>
@@ -557,32 +960,58 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
     <!-- Профиль -->
     <section class="view" id="vProfile">
       <div class="col">
-        <div class="top">
-          <h1>
-            <button class="icon-btn hidden" id="profBack" title="Назад"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
-            <span id="profTitle">Профиль</span>
-            <!-- настройки клиента: только в своём профиле -->
-            <button class="icon-btn hidden" id="profGear" title="Настройки" style="margin-left:auto">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            </button>
-          </h1>
-          <div style="height:8px"></div>
+        <div class="prof2-top">
+          <button class="pill-btn" id="profGear" title="Настройки"><svg viewBox="0 0 24 24"><path d="M12 2.6l8.1 4.7v9.4L12 21.4l-8.1-4.7V7.3z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          <button class="pill-btn hidden" id="profBack" title="Назад"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <button class="pill-btn" id="profEdit">Изм.</button>
         </div>
-        <div class="prof" id="profHead"></div>
-        <div class="ptabs" id="profTabs">
-          <button data-tab="posts" class="on">Посты</button>
-          <button data-tab="reposts">Репосты</button>
-          <button data-tab="communities">Сообщества</button>
-        </div>
-        <div id="profPostsBox">
-          <div id="profList"></div>
-          <div class="loader" id="profMore"></div>
-        </div>
-        <div id="profRepBox" class="hidden">
-          <div id="profRepList"></div>
-          <div class="loader" id="profRepMore"></div>
+        <div id="profHead"></div>
+        <div class="card tabs-card" id="profTabsCard">
+          <div class="ptabs2" id="profTabs">
+            <button data-tab="posts" title="Публикации" class="on"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 10h16"/></svg></button>
+            <button data-tab="private" title="Приватные"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><path d="M12 15v2"/></svg></button>
+            <button data-tab="reposts" title="Репосты"><svg viewBox="0 0 24 24"><path d="M7 21V7a3 3 0 0 1 3-3h1"/><path d="M4 18l3 3 3-3"/><path d="M17 3v14a3 3 0 0 1-3 3h-1"/><path d="M20 6l-3-3-3 3"/></svg></button>
+            <button data-tab="saved" title="Сохранённое"><svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg></button>
+            <button data-tab="liked" title="Понравилось"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+          </div>
+          <div id="profPostsBox"><div id="profList"></div><div class="loader" id="profMore"></div></div>
+          <div id="profPrivBox" class="hidden"><div id="profPrivList"></div><div class="loader" id="profPrivMore"></div></div>
+          <div id="profRepBox" class="hidden"><div id="profRepList"></div><div class="loader" id="profRepMore"></div></div>
+          <div id="profSavedBox" class="hidden"><div id="profSavedList"></div><div class="loader" id="profSavedMore"></div></div>
+          <div id="profLikedBox" class="hidden"><div id="profLikedList"></div><div class="loader" id="profLikedMore"></div></div>
         </div>
         <div id="profComms" class="hidden"></div>
+      </div>
+    </section>
+
+    <!-- Уведомления -->
+    <section class="view" id="vNotif">
+      <div class="col">
+        <div class="vhead">
+          <button class="vh-btn js-gear" title="Настройки"><svg viewBox="0 0 24 24"><path d="M12 2.6l8.1 4.7v9.4L12 21.4l-8.1-4.7V7.3z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          <h1>Уведомления</h1>
+          <div class="vh-right"><button class="vh-btn" id="notifSearchBtn" title="Поиск"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5l-4.4-4.4"/></svg></button></div>
+        </div>
+        <div class="chips-row" id="notifTabs">
+          <button data-f="all" class="on">Все</button>
+          <button data-f="comments">Комментарии</button>
+          <button data-f="mentions">Упоминания</button>
+        </div>
+        <div id="notifList"></div>
+      </div>
+    </section>
+
+    <!-- Поиск людей и сообществ -->
+    <section class="view" id="vSearch">
+      <div class="col">
+        <div class="vhead">
+          <button class="vh-btn" id="searchBack" title="Назад"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <h1>Поиск</h1>
+          <div class="vh-right"></div>
+        </div>
+        <div class="search2"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5l-4.4-4.4"/></svg>
+          <input id="gSearch" placeholder="Люди и сообщества" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+        <div id="gResults"></div>
       </div>
     </section>
 
@@ -698,6 +1127,7 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
         <span class="attach-count" id="attachCount"></span>
         <input type="file" id="attachInput" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime" multiple hidden>
       </div>
+      <label class="priv-toggle" id="privToggle" title="Пост увидите только вы — вкладка с замком в профиле"><input type="checkbox" id="postPrivate"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Только я</span></label>
       <span class="counter" id="postCount"></span>
       <button class="btn small" id="postBtn" disabled>Опубликовать</button>
     </div>
@@ -729,6 +1159,21 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
     <div class="sheet-body">
       <!-- главное меню -->
       <div id="setMain">
+        <button class="set-row" id="setComms" type="button">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg>
+          <span>Мои сообщества</span>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="set-row" id="setVerif" type="button">
+          <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+          <span>Верификация</span>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="set-row hidden" id="setAdmin" type="button">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+          <span>Панель администратора</span>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
         <button class="set-row" data-page="theme">
           <svg class="ic" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
           <span>Тема</span><span class="set-val" id="setThemeVal"></span>
@@ -892,6 +1337,24 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
   </div>
 </div>
 
+<!-- Код для «Личных» чатов: размытый фон и цифровая клавиатура -->
+<div class="pin-overlay hidden" id="pinOverlay">
+  <div class="pin-box">
+    <div class="pin-title" id="pinTitle">Введите код:</div>
+    <div class="pin-dots" id="pinDots"><i></i><i></i><i></i><i></i></div>
+    <div class="pin-pad" id="pinPad">
+      <button data-d="1">1</button><button data-d="2">2</button><button data-d="3">3</button>
+      <button data-d="4">4</button><button data-d="5">5</button><button data-d="6">6</button>
+      <button data-d="7">7</button><button data-d="8">8</button><button data-d="9">9</button>
+      <button data-d="0" class="zero">0</button>
+    </div>
+    <div class="pin-err" id="pinErr"></div>
+  </div>
+</div>
+
+<!-- Всплывающее меню (⋮ у поста, зажатие/правый клик по чату) -->
+<div class="pop hidden" id="pop"></div>
+
 <!-- Окно создания сообщества -->
 <div class="modal hidden" id="commModal">
   <div class="sheet">
@@ -915,7 +1378,7 @@ svg.flag { width:30px; height:20px; border-radius:3px; fill:none; stroke:none; f
 'use strict';
 
 // ================= Настройки =================
-const PROD_SERVER = 'https://dio-myproj1.msk1.amvera.tech';
+const PROD_SERVER = 'https://divy-divy.msk1.amvera.tech';
 const IS_LOCAL = ['localhost', '127.0.0.1', ''].includes(location.hostname);
 // Для отладки адрес можно переопределить: localStorage.dio_server = 'http://...'
 const SERVER = (store('dio_server') || (IS_LOCAL ? 'http://localhost:8080' : PROD_SERVER)).replace(/\/$/, '');
@@ -1157,7 +1620,7 @@ function tr(s) {
   return r == null ? s : s.replace(t, r);
 }
 // пользовательский контент не трогаем
-const NO_TR = '.cmt-body,.lnk,.dname,.dplace,.dcard-bio,.fav-bio,.side-head .sub,.post-body,.post-name,.prof-name,.prof-bio,.prof-user,.msg,.title,.prev,.comm-desc,.comm-slug,.lot-name,.req-text,.req-links,.chip-name,.brand,.logo,textarea';
+const NO_TR = '.cmt-body,.lnk,.dname,.dplace,.dcard-bio,.fav-bio,.side-head .sub,.post-body,.post-name,.prof-name,.prof-bio,.prof-user,.msg,.title,.prev,.comm-desc,.comm-slug,.lot-name,.req-text,.req-links,.chip-name,.brand,.logo,.p2-text,.p2-name,.p2-handle,.c2-name,.c2-prev,.bub,.cap,.prof2-name,.prof2-sub,.irow-v,.ntext b,textarea';
 function translateTree(root) {
   if (root.nodeType === 3) {
     const p = root.parentElement;
@@ -1474,7 +1937,6 @@ function showFeed() {
 }
 
 $('newPosts').onclick = showFresh;
-$('brand').onclick = () => $('vFeed').scrollTo({ top: 0, behavior: 'smooth' });
 
 function showFresh() {
   S.freshCount = 0; updateFresh();
@@ -3526,6 +3988,7 @@ function onEvent(ev) {
     case 'post_del': removePost(ev.p); break;
     case 'comm_del': onCommunityDeleted(ev.id); break;
     case 'media': onMediaReady(ev.m); break;
+    case 'notif': onNotif(ev.n); break;
     case 'reposts': { const p = S.posts.get(ev.p); if (p) { p.reposts = ev.n; repaintPost(ev.p); } break; }
     case 'comment': onComment(ev.c); break;
     case 'comment_del': onCommentDeleted(ev.id, ev.p); break;
@@ -3967,6 +4430,1368 @@ document.addEventListener('visibilitychange', () => {
   reconnectNow();
 });
 addEventListener('focus', markRead);
+
+// ===================================================================================
+// ================= НОВЫЙ ДИЗАЙН (мобильная версия по макетам из Figma) =================
+// Функции ниже заменяют одноимённые прежние (в JS побеждает последнее объявление функции).
+// ===================================================================================
+const ICON2 = {
+  dots: '<svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>',
+  comment: '<svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="13" rx="4.5"/><path d="M8 17l-2 3.5 5-3.5"/><path d="M8.5 10.5h7"/></svg>',
+  repost: '<svg viewBox="0 0 24 24"><path d="M7 20V7.5a3 3 0 0 1 3-3h1"/><path d="M4 17l3 3 3-3"/><path d="M17 4v12.5a3 3 0 0 1-3 3h-1"/><path d="M20 7l-3-3-3 3"/></svg>',
+  save: '<svg viewBox="0 0 24 24"><path d="M6.5 3.5h11v17l-5.5-4-5.5 4z"/></svg>',
+  play: '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>',
+  pause: '<svg viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>',
+  mic: '<svg viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5"/></svg>',
+  up: '<svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
+  meh: '<svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/><path d="M12 6l-2 4 3 2-2 4"/></svg>',
+  plane: '<svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>',
+  ban: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>',
+  pin: '<svg viewBox="0 0 24 24"><path d="M14.5 3.5l6 6-2.5 1-3.5 3.5.5 4.5-2 2-3.5-5-5.5 5.5-1-1L8.5 14l-5-3.5 2-2 4.5.5L13.5 6z"/></svg>',
+  bell: '<svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 6.5-2.5 8.5-2.5 8.5h17S18 15.5 18 9"/><path d="M13.8 20.5a2 2 0 0 1-3.6 0"/></svg>',
+  bellOff: '<svg viewBox="0 0 24 24"><path d="M8.6 3.9A6 6 0 0 1 18 9c0 3 .6 5 1.3 6.3M6 9c0 6.5-2.5 8.5-2.5 8.5H17"/><path d="M13.8 20.5a2 2 0 0 1-3.6 0M3 3l18 18"/></svg>',
+  lock: '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+  unlock: '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.6-1.7"/></svg>',
+  broom: '<svg viewBox="0 0 24 24"><path d="M14 3l-4.5 9M4.5 21h15l-2-7.5h-11z"/><path d="M8 13.5L6.5 21M12 13.5V21M16 13.5l1.5 7.5"/></svg>',
+  plusC: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
+  checkC: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>',
+  userPlus: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1"/><path d="M19 8v6M16 11h6"/></svg>',
+  userCheck: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1"/><path d="M16 11l2 2 4-4"/></svg>',
+  userWait: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1"/><circle cx="19" cy="11" r="3.5"/><path d="M19 9.5V11l1 1"/></svg>',
+  volX: '<svg viewBox="0 0 24 24"><path d="M11 5L6 9H2.5v6H6l5 4z"/><path d="M22 9l-6 6M16 9l6 6"/></svg>',
+  vol: '<svg viewBox="0 0 24 24"><path d="M11 5L6 9H2.5v6H6l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>',
+  minusRed: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="currentColor" stroke="none"/><path d="M7.5 12h9" stroke="#fff" stroke-width="2.6"/></svg>',
+  chevDown: '<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
+  logout: '<svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>',
+  hex: '<svg viewBox="0 0 24 24"><path d="M12 2.6l8.1 4.7v9.4L12 21.4l-8.1-4.7V7.3z"/><circle cx="12" cy="12" r="3"/></svg>',
+  back: '<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>',
+};
+
+// 15500 → «15.5k», 1200000 → «1.2M»
+function fmtCount(n) {
+  n = n || 0;
+  if (n < 1000) return n ? String(n) : '';
+  if (n < 1e6) return (Math.round(n / 100) / 10).toString().replace(/\.0$/, '') + 'k';
+  return (Math.round(n / 1e5) / 10).toString().replace(/\.0$/, '') + 'M';
+}
+const fmtDur = sec => { sec = Math.max(0, Math.round(sec || 0)); return Math.floor(sec / 60) + ':' + pad(sec % 60); };
+
+// ---------- всплывающее меню (⋮ у поста, зажатие или правый клик по чату, меню профиля) ----------
+function popMenu(anchor, items, cls = '') {
+  const pop = $('pop');
+  pop.className = 'pop' + (cls ? ' ' + cls : '');
+  pop.replaceChildren();
+  for (const it of items) {
+    if (!it) continue;
+    const b = el('button', it.danger ? 'danger' : '');
+    b.type = 'button';
+    b.innerHTML = it.icon || '';
+    if (it.text) b.append(el('span', null, it.text));
+    b.title = it.title || it.text || '';
+    b.onclick = e => { e.stopPropagation(); closePop(); it.onClick(); };
+    pop.append(b);
+  }
+  pop.classList.remove('hidden');
+  const pw = pop.offsetWidth, ph = pop.offsetHeight;
+  let x, y;
+  if (anchor instanceof Element) {
+    const r = anchor.getBoundingClientRect();
+    x = cls === 'icons' ? r.left + r.width / 2 - pw / 2 : r.right - pw;
+    y = r.bottom + 4;
+    if (y + ph > innerHeight - 8) y = r.top - ph - 4;
+  } else {
+    x = anchor.x; y = anchor.y;
+    if (y + ph > innerHeight - 8) y = anchor.y - ph;
+  }
+  pop.style.left = Math.max(8, Math.min(x, innerWidth - pw - 8)) + 'px';
+  pop.style.top = Math.max(8, y) + 'px';
+}
+function closePop() { $('pop').classList.add('hidden'); }
+document.addEventListener('pointerdown', e => { if (!$('pop').classList.contains('hidden') && !$('pop').contains(e.target)) closePop(); }, true);
+document.addEventListener('scroll', closePop, true);
+
+// ---------- навигация ----------
+const VIEWS = [['feed', 'vFeed'], ['messages', 'vMessages'], ['profile', 'vProfile'], ['community', 'vCommunity'],
+  ['admin', 'vAdmin'], ['post', 'vPost'], ['notifications', 'vNotif'], ['search', 'vSearch']];
+function setView(name, navKey) {
+  S.view = name;
+  for (const [v, id] of VIEWS) $(id).classList.toggle('on', name === v);
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('on', b.dataset.go === navKey));
+  updateFab();
+  closePop();
+  if (name !== 'messages') { leaveChat(); if (S.privMode) lockPrivate(); }
+}
+
+function route() {
+  if (!S.me) return;
+  const [a, b, c3] = location.hash.replace(/^#\/?/, '').split('/');
+  if (a === 'messages') showMessages(b ? Number(b) : 0);
+  else if (a === 'u' && b) showProfile(decodeURIComponent(b));
+  else if (a === 'c' && b) showCommunity(decodeURIComponent(b));
+  else if (a === 'admin') showAdmin(b);
+  else if (a === 'p' && b) showPostPage(Number(b));
+  else if (a === 'dating') showDating(b);
+  else if (a === 'inbox' && b) showInbox(Number(b), Number(c3) || 0);
+  else if (a === 'notifications') showNotifications();
+  else if (a === 'search') showSearch();
+  else showFeed();
+}
+
+// «＋» остался только на странице сообщества (пост от имени сообщества); на главной — плитки «Пост · История · Видео»
+function updateFab() {
+  const fab = $('createBtn');
+  const show = S.view === 'community' && S.comm && !!S.comm.role;
+  fab.classList.toggle('hidden', !show);
+  fab.classList.toggle('away', show && $('vCommunity').classList.contains('bars-hidden'));
+  fab.title = 'Пост от имени сообщества';
+}
+
+function renderMe() {
+  setAva($('navAva'), S.me, false);
+  setAva($('postAva'), S.me, false);
+  $('navAdmin').classList.toggle('hidden', !hasRank('intern'));
+  $('setAdmin').classList.toggle('hidden', !hasRank('intern'));
+  $('setVerif').classList.toggle('hidden', !!S.me.verified);
+  if (!NT.countLoaded) { NT.countLoaded = true; loadNotifCount(); }
+}
+
+// ---------- шапки разделов ----------
+document.querySelectorAll('.js-gear').forEach(b => b.onclick = openSettings);
+$('feedSearchBtn').onclick = () => go('search');
+$('notifSearchBtn').onclick = () => go('search');
+$('feedDatingBtn').onclick = () => go('dating');
+$('datingBack').onclick = () => navDepth > 0 ? history.back() : go('feed');
+$('feedTitle').onclick = () => $('vFeed').scrollTo({ top: 0, behavior: 'smooth' });
+
+// Пост · История · Видео
+$('cPost').onclick = () => openComposer();
+$('cVideo').onclick = () => {
+  openComposer();
+  const inp = $('attachInput'), accept = inp.accept;
+  inp.accept = 'video/mp4,video/quicktime';
+  inp.click();
+  setTimeout(() => { inp.accept = accept; }, 1500);
+};
+$('cStory').onclick = () => alert(L('Истории скоро появятся', 'Stories are coming soon'));
+
+function setHomeMode(mode) {
+  D.mode = mode;
+  const dating = mode === 'dating';
+  $('feedTitle').textContent = dating ? tr('Знакомства') : tr('Главная');
+  $('feedGear').classList.toggle('hidden', dating);
+  $('datingBack').classList.toggle('hidden', !dating);
+  $('feedRight').style.visibility = dating ? 'hidden' : '';
+  $('createRow').classList.toggle('hidden', dating);
+  $('datingMenu').classList.toggle('hidden', !dating);
+  $('feedBox').classList.toggle('hidden', dating);
+  $('datingBox').classList.toggle('hidden', !dating);
+  if (dating) $('newPosts').classList.add('hidden'); else updateFresh();
+  updateFab();
+}
+
+// ---------- новый пост: «Только я» (приватный) ----------
+async function publish() {
+  const body = $('postInput').value.trim();
+  if ((!body && !S.attach.length) || body.length > POST_MAX || $('postBtn').disabled) return;
+  $('postBtn').disabled = true;
+  try {
+    const req = { body, media: S.attach.map(a => a.media.id) };
+    if (S.postAs) req.community_id = S.postAs.id;
+    else if ($('postPrivate').checked) req.private = true;
+    const p = await api('/api/posts', { method: 'POST', body: req });
+    $('postInput').value = '';
+    $('postInput').style.height = '';
+    $('postPrivate').checked = false;
+    clearAttach();
+    closeComposer();
+    cachePost(p);
+    if (p.private) { if (S.tabLoaded && S.tabLoaded.private && S.profMine) prependPost(PRIV, p); }
+    else { prependPost(FEED, p); placeNewPost(p); }
+  } catch (e) { alert(e.message); }
+  updateCounter();
+}
+
+function onNewPost(p) {
+  if (S.posts.has(p.id)) return; // свой пост уже добавлен после публикации
+  cachePost(p);
+  if (p.private) { if (S.tabLoaded && S.tabLoaded.private && S.profMine) prependPost(PRIV, p); return; }
+  if (p.author.id === S.me.id) prependPost(FEED, p); // свой пост с другого устройства
+  else if (FEED.loadedOnce) { S.freshCount++; updateFresh(); }
+  placeNewPost(p);
+}
+
+// ---------- карточка поста ----------
+function postNode(p) {
+  const art = el('article', 'post2');
+  art.dataset.post = p.id;
+  const c = p.community; // пост сообщества показываем от имени сообщества
+  const who = c ? { id: c.id, name: c.name, handle: c.slug, verified: c.verified, avatar: c.avatar }
+                : { id: p.author.id, name: p.author.name, handle: p.author.username, verified: p.author.verified, avatar: p.author.avatar };
+  const openAuthor = () => go((c ? 'c/' : 'u/') + encodeURIComponent(who.handle));
+  const head = el('div', 'p2-head');
+  const ava = el('div', 'ava' + (c ? ' sq' : ''));
+  setAva(ava, who, false);
+  ava.onclick = openAuthor;
+  const whoBox = el('div', 'p2-who');
+  const nm = el('div', 'p2-name');
+  nm.append(el('span', null, who.name));
+  if (who.verified) nm.append(verifiedBadge());
+  whoBox.append(nm, el('div', 'p2-handle', '@' + who.handle));
+  whoBox.onclick = openAuthor;
+  head.append(ava, whoBox);
+  const own = c ? canManage(c.id) : p.author.id === S.me.id;
+  if (!own) { // «Подписаться» / «Подписки»
+    const fp = el('button', 'follow-pill');
+    fp.type = 'button';
+    fp.onclick = () => toggleFollowAuthor(p);
+    head.append(fp);
+  }
+  const dots = el('button', 'dots-btn');
+  dots.type = 'button';
+  dots.title = 'Ещё';
+  dots.innerHTML = ICON2.dots;
+  dots.onclick = e => { e.stopPropagation(); postMenu(dots, p); };
+  head.append(dots);
+
+  const main = el('div', 'post-main');
+  if (p.media && p.media.length) main.append(carousel(p.media));
+  if (p.body) { // одна строка + «Развернуть»
+    const row = el('div', 'p2-row');
+    const t = el('div', 'p2-text');
+    linkify(t, p.body);
+    row.append(t);
+    if (p.body.length > 40 || p.body.includes('\n')) {
+      t.classList.add('clamp');
+      const more = el('button', 'p2-more', 'Развернуть');
+      more.type = 'button';
+      more.onclick = () => { t.classList.remove('clamp'); more.remove(); };
+      row.append(more);
+    }
+    main.append(row);
+  }
+  // ❤ · 💬 · ↕ · 🔖
+  const acts = el('div', 'p2-acts');
+  const act = (cls, icon, title, onClick) => {
+    const b = el('button', 'act ' + cls);
+    b.type = 'button';
+    b.title = title;
+    b.innerHTML = icon;
+    b.append(el('span', 'n'));
+    b.onclick = onClick;
+    acts.append(b);
+  };
+  act('like', ICON.heart, 'Нравится', () => toggleLike(p.id));
+  act('com', ICON2.comment, 'Комментарии', () => toggleComments(art, p));
+  act('rep', ICON2.repost, 'Репост', () => toggleRepost(p.id));
+  act('save', ICON2.save, 'Сохранить', () => toggleSave(p.id));
+  main.append(acts);
+  art.append(head, main);
+  paintLike(art, p);
+  return art;
+}
+
+function paintLike(node, p) {
+  const q = sel => node.querySelector(sel);
+  const like = q('.act.like');
+  if (like) { like.classList.toggle('liked', !!p.liked); like.title = p.liked ? 'Убрать лайк' : 'Нравится'; like.querySelector('.n').textContent = fmtCount(p.likes); }
+  const com = q('.act.com');
+  if (com) com.querySelector('.n').textContent = fmtCount(p.comments);
+  const rp = q('.act.rep');
+  if (rp) { rp.classList.toggle('on', !!p.reposted); rp.title = p.reposted ? 'Отменить репост' : 'Репост'; rp.querySelector('.n').textContent = fmtCount(p.reposts); }
+  const sv = q('.act.save');
+  if (sv) { sv.classList.toggle('on', !!p.saved); sv.title = p.saved ? 'Убрать из сохранённого' : 'Сохранить'; sv.querySelector('.n').textContent = fmtCount(p.saves); }
+  const fp = q('.follow-pill');
+  if (fp) { fp.textContent = p.following ? 'Подписки' : 'Подписаться'; fp.classList.toggle('following', !!p.following); }
+}
+
+async function toggleRepost(id) {
+  const p = S.posts.get(id);
+  if (!p) return;
+  if (p.author.id === S.me.id && !p.community) { alert(L('Свой пост репостить не нужно — он и так в вашем профиле', "No need to repost your own post — it's already on your profile")); return; }
+  const on = !p.reposted;
+  p.reposted = on; p.reposts += on ? 1 : -1;
+  repaintPost(id);
+  try {
+    const r = await api('/api/posts/repost', { method: 'POST', body: { post_id: id, on } });
+    p.reposts = r.reposts; p.reposted = r.reposted;
+  } catch (e) { p.reposted = !on; p.reposts += on ? -1 : 1; alert(e.message); }
+  repaintPost(id);
+}
+
+async function toggleSave(id) {
+  const p = S.posts.get(id);
+  if (!p) return;
+  const on = !p.saved;
+  p.saved = on; p.saves = Math.max(0, (p.saves || 0) + (on ? 1 : -1));
+  repaintPost(id);
+  try {
+    const r = await api('/api/posts/save', { method: 'POST', body: { post_id: id, on } });
+    p.saves = r.saves; p.saved = r.saved;
+    if (!on && S.profMine) { SAVED.ids = SAVED.ids.filter(x => x !== id); $('profSavedList').querySelectorAll(`[data-post="${id}"]`).forEach(n => n.remove()); updateLoader(SAVED); }
+  } catch (e) { p.saved = !on; p.saves = Math.max(0, p.saves + (on ? -1 : 1)); alert(e.message); }
+  repaintPost(id);
+}
+
+async function toggleFollowAuthor(p) {
+  const c = p.community, on = !p.following;
+  if (!on && !confirm(L('Отписаться?', 'Unfollow?'))) return;
+  try {
+    if (c) await api('/api/community/follow', { method: 'POST', body: { id: c.id, on } });
+    else await api('/api/follow', { method: 'POST', body: { user_id: p.author.id, on } });
+    for (const x of S.posts.values()) {
+      const same = c ? (x.community && x.community.id === c.id) : (!x.community && x.author.id === p.author.id);
+      if (same) { x.following = on; repaintPost(x.id); }
+    }
+  } catch (e) { alert(e.message); }
+}
+
+// ⋮ у поста: «Неинтересно», «Поделиться», «Пожаловаться» (и «Удалить» для своих)
+function postMenu(anchor, p) {
+  const canDel = p.author.id === S.me.id || (p.community && canManage(p.community.id));
+  popMenu(anchor, [
+    { icon: ICON2.meh, text: tr('Неинтересно'), onClick: () => hidePost(p) },
+    { icon: ICON2.plane, text: tr('Поделиться'), onClick: () => openShare(p) },
+    { icon: ICON2.ban, text: tr('Пожаловаться'), danger: true, onClick: () => reportPost(p) },
+    canDel && { icon: ICON.trash, text: tr('Удалить'), danger: true, onClick: () => deletePost(p.id) },
+  ]);
+}
+
+async function hidePost(p) {
+  try {
+    await api('/api/posts/hide', { method: 'POST', body: { post_id: p.id } });
+    FEED.ids = FEED.ids.filter(x => x !== p.id);
+    $('feedList').querySelectorAll(`[data-post="${p.id}"]`).forEach(n => n.remove());
+  } catch (e) { alert(e.message); }
+}
+
+async function reportPost(p) {
+  const reason = prompt(L('Что не так с этим постом?', "What's wrong with this post?"), '');
+  if (reason === null) return;
+  try {
+    await api('/api/posts/report', { method: 'POST', body: { post_id: p.id, reason } });
+    alert(L('Жалоба отправлена. Спасибо!', 'Report sent. Thank you!'));
+  } catch (e) { alert(e.message); }
+}
+
+// ---------- видео: обложка, длительность и ▶ (само видео грузится только по нажатию) ----------
+function videoRaw(m) {
+  const v = document.createElement('video');
+  v.controls = true;
+  v.playsInline = true;
+  v.preload = 'metadata';
+  if (m.poster) v.poster = SERVER + m.poster;
+  v.src = m.localUrl || SERVER + m.url;
+  return v;
+}
+function videoEl(m) {
+  const box = el('div', 'vprev');
+  if (m.poster) box.style.backgroundImage = `url("${SERVER + m.poster}")`;
+  if (m.dur) box.append(el('div', 'vdur', fmtDur(m.dur)));
+  const play = el('div', 'vplay');
+  play.innerHTML = ICON2.play;
+  box.append(play);
+  box.onclick = e => {
+    e.stopPropagation();
+    const v = videoRaw(m);
+    v.autoplay = true;
+    box.replaceWith(v);
+    v.play().catch(() => {});
+  };
+  return box;
+}
+
+// ---------- профиль ----------
+const PRIV = { box: 'profPrivList', loader: 'profPrivMore', ids: [], more: false, busy: false, error: false, gen: 0,
+  url: () => '/api/feed?private=1', empty: () => 'Приватных публикаций нет...' };
+const SAVED = { box: 'profSavedList', loader: 'profSavedMore', ids: [], more: false, busy: false, error: false, gen: 0,
+  url: () => '/api/feed?saved=1', empty: () => 'Сохранённых публикаций нет...' };
+const LIKED = { box: 'profLikedList', loader: 'profLikedMore', ids: [], more: false, busy: false, error: false, gen: 0,
+  url: () => '/api/feed?liked=1', empty: () => 'Понравившихся публикаций нет...' };
+PROF.empty = () => 'Публикаций нет...';
+REP.empty = () => 'Репостов нет...';
+const PTAB_LIST = { posts: PROF, private: PRIV, reposts: REP, saved: SAVED, liked: LIKED };
+const PTAB_BOX = { posts: 'profPostsBox', private: 'profPrivBox', reposts: 'profRepBox', saved: 'profSavedBox', liked: 'profLikedBox' };
+const io2 = new IntersectionObserver(entries => {
+  for (const e of entries) {
+    if (!e.isIntersecting) continue;
+    const lst = { profPrivMore: PRIV, profSavedMore: SAVED, profLikedMore: LIKED }[e.target.id];
+    if (lst) { lst.error = false; loadList(lst); }
+  }
+}, { rootMargin: '600px' });
+['profPrivMore', 'profSavedMore', 'profLikedMore'].forEach(id => io2.observe($(id)));
+
+async function showProfile(username) {
+  const mine = sameUser(username, S.me.username);
+  S.profMine = mine;
+  if (S.profEditing) setProfEditing(false);
+  setView('profile', mine ? 'me' : '');
+  $('profBack').classList.toggle('hidden', mine);
+  $('profGear').classList.toggle('hidden', !mine);
+  $('profEdit').classList.toggle('hidden', !mine);
+  // у чужого профиля — только «Публикации» и «Репосты»
+  document.querySelectorAll('#profTabs button').forEach(b => b.classList.toggle('hidden', !mine && !['posts', 'reposts'].includes(b.dataset.tab)));
+  const req = ++S.profReq;
+  const same = S.prof && sameUser(S.prof.username, username);
+  if (!same) {
+    S.prof = null;
+    S.comms = null;
+    for (const L of Object.values(PTAB_LIST)) {
+      L.gen++; L.ids = []; L.more = false; L.busy = false;
+      $(L.box).replaceChildren();
+      $(L.loader).textContent = '';
+    }
+    S.tabLoaded = {};
+    S.repFor = 0;
+    setProfTab('posts');
+    $('profHead').replaceChildren(el('div', 'loader', 'Загрузка…'));
+    $('vProfile').scrollTop = 0;
+  }
+  try {
+    const u = await api('/api/profile?u=' + encodeURIComponent(username));
+    if (req !== S.profReq) return;
+    S.prof = u;
+    renderProfile();
+    if (!same) setProfTab(S.profTab || 'posts');
+  } catch (e) {
+    if (req === S.profReq) $('profHead').replaceChildren(el('div', 'empty', e.message));
+  }
+}
+$('profBack').onclick = () => navDepth > 0 ? history.back() : go('feed');
+$('profEdit').onclick = () => editProfile();
+
+document.querySelectorAll('#profTabs button').forEach(b => b.onclick = () => setProfTab(b.dataset.tab));
+function setProfTab(tab) {
+  if (!PTAB_LIST[tab]) tab = 'posts';
+  S.profTab = tab;
+  document.querySelectorAll('#profTabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  for (const [t, id] of Object.entries(PTAB_BOX)) $(id).classList.toggle('hidden', t !== tab);
+  updateFab();
+  S.tabLoaded = S.tabLoaded || {};
+  if (S.prof && !S.tabLoaded[tab]) {
+    S.tabLoaded[tab] = true;
+    if (tab === 'reposts') S.repFor = S.prof.id;
+    loadList(PTAB_LIST[tab], true);
+  }
+}
+
+function setProfEditing(on) {
+  S.profEditing = on;
+  $('profTabsCard').classList.toggle('hidden', on);
+  $('profEdit').classList.toggle('hidden', on || !S.profMine);
+  if (!on) setProfTab(S.profTab || 'posts');
+  updateFab();
+}
+
+const MONTHS_SHORT = ['Янв.', 'Фев.', 'Мар.', 'Апр.', 'Мая', 'Июн.', 'Июл.', 'Авг.', 'Сен.', 'Окт.', 'Ноя.', 'Дек.'];
+function fmtBirthday(s) { // «2010-12-06» → «6 Дек. 2010»
+  const [y, m, d] = (s || '').split('-').map(Number);
+  if (!y || !m || !d) return s;
+  if (LANG === 'en') return new Date(y, m - 1, d).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+  return `${d} ${MONTHS_SHORT[m - 1]} ${y}`;
+}
+
+function renderProfile() {
+  const u = S.prof;
+  if (!u) return;
+  if (S.profEditing) setProfEditing(false);
+  const me = u.id === S.me.id;
+  const box = $('profHead');
+  box.replaceChildren();
+  const ava = el('div', 'ava prof2-ava');
+  setAva(ava, u, !me && u.online);
+  const name = el('div', 'prof2-name');
+  name.append(el('span', null, u.name));
+  if (u.verified) name.append(verifiedBadge());
+  if (!me) { // ⌄ рядом с именем: подписаться, в друзья, без звука, заблокировать
+    const more = el('button', 'prof2-more');
+    more.type = 'button';
+    more.title = 'Действия';
+    more.innerHTML = ICON2.chevDown;
+    more.onclick = e => { e.stopPropagation(); profileMenu(more, u); };
+    name.append(more);
+  }
+  const sub = el('div', 'prof2-sub');
+  sub.append(el('b', null, lastSeenText(u)), el('span', 'sep'), '@' + u.username);
+  const stats = el('div', 'card stats-card');
+  const stat = (label, n) => { const d = el('div'); d.append(el('div', null, label), el('b', null, fmtCount(n) || '0')); return d; };
+  stats.append(stat('Подписки:', u.following), stat('Подписчики:', u.followers), stat('Друзья:', u.friends));
+  box.append(ava, name, sub, stats);
+  const rows = [];
+  if (u.phone) rows.push([u.phone, 'Номер телефона']);
+  if (u.bio) rows.push([u.bio, 'Описание']);
+  if (u.birthday) rows.push([fmtBirthday(u.birthday), 'Дата рождения']);
+  if (u.usernames && u.usernames.length) rows.push([u.usernames.map(x => '@' + x).join(', '), 'Другие юзернеймы']);
+  if (rows.length) {
+    const info = el('div', 'card info-card');
+    for (const [v, l] of rows) { const r = el('div', 'irow'); r.append(el('div', 'irow-v', v), el('div', 'irow-l', l)); info.append(r); }
+    box.append(info);
+  }
+}
+
+function profileMenu(anchor, u) {
+  const fs = u.friend_state || 'none';
+  const friendIcon = fs === 'friends' ? ICON2.userCheck : fs === 'sent' ? ICON2.userWait : ICON2.userPlus;
+  const friendTitle = { friends: 'Убрать из друзей', sent: 'Отменить заявку в друзья', received: 'Принять заявку в друзья', none: 'Добавить в друзья' }[fs];
+  popMenu(anchor, [
+    { icon: u.i_follow ? ICON2.checkC : ICON2.plusC, title: u.i_follow ? tr('Отписаться') : tr('Подписаться'), onClick: () => profileAction(u, 'follow') },
+    { icon: friendIcon, title: tr(friendTitle), onClick: () => profileAction(u, 'friend') },
+    { icon: u.muted ? ICON2.vol : ICON2.volX, title: u.muted ? tr('Включить уведомления') : tr('Без звука'), onClick: () => profileAction(u, 'mute') },
+    { icon: ICON2.minusRed, title: u.blocked ? tr('Разблокировать') : tr('Заблокировать'), danger: true, onClick: () => profileAction(u, 'block') },
+  ], 'icons');
+}
+
+async function profileAction(u, what) {
+  try {
+    if (what === 'follow') {
+      const r = await api('/api/follow', { method: 'POST', body: { user_id: u.id, on: !u.i_follow } });
+      u.i_follow = r.following; u.followers = r.followers;
+    } else if (what === 'friend') {
+      const fs = u.friend_state || 'none';
+      const on = fs === 'none' || fs === 'received';
+      if (!on && !confirm(fs === 'friends' ? L('Убрать из друзей?', 'Remove from friends?') : L('Отменить заявку?', 'Cancel the request?'))) return;
+      const r = await api('/api/friends', { method: 'POST', body: { user_id: u.id, on } });
+      u.friend_state = r.state; u.friends = r.friends;
+      if (on) alert(r.state === 'friends' ? L('Теперь вы друзья', 'You are now friends') : L('Заявка в друзья отправлена', 'Friend request sent'));
+    } else if (what === 'mute') {
+      const r = await api('/api/mute', { method: 'POST', body: { user_id: u.id, on: !u.muted } });
+      u.muted = r.muted;
+    } else if (what === 'block') {
+      const on = !u.blocked;
+      if (on && !confirm(L(`Заблокировать ${u.name}? Он не сможет писать вам, его посты пропадут из вашей ленты.`, `Block ${u.name}? They won't be able to message you, and their posts will disappear from your feed.`))) return;
+      const r = await api('/api/block', { method: 'POST', body: { user_id: u.id, on } });
+      u.blocked = r.blocked;
+      if (on) { u.i_follow = false; u.friend_state = 'none'; }
+    }
+    if (S.prof === u) renderProfile();
+  } catch (e) { alert(e.message); }
+}
+
+function editProfile() {
+  const u = S.prof, box = $('profHead');
+  setProfEditing(true);
+  box.replaceChildren();
+  const form = el('div', 'card prof-edit');
+  const name = el('input', 'field');
+  name.value = u.name; name.maxLength = 64; name.placeholder = 'Имя';
+  const bio = el('textarea', 'field');
+  bio.value = u.bio || ''; bio.maxLength = 300; bio.rows = 3; bio.placeholder = 'Описание';
+  const phone = el('input', 'field');
+  phone.type = 'tel'; phone.value = u.phone || ''; phone.maxLength = 20; phone.placeholder = '+7(999)123-45-67';
+  const bday = el('input', 'field');
+  bday.type = 'date'; bday.value = u.birthday || ''; bday.max = new Date().toISOString().slice(0, 10);
+  const uname = el('input', 'field');
+  uname.value = u.username; uname.maxLength = 21; uname.placeholder = 'Юзернейм: 5–20 символов (латиница, цифры, _)';
+  uname.autocapitalize = 'off'; uname.spellcheck = false; uname.autocomplete = 'off';
+  const more = el('button', 'link-btn', '+ Добавить ещё один юзернейм');
+  more.type = 'button';
+  more.onclick = openMarket;
+  const err = el('div', 'err');
+  const save = el('button', 'btn small', 'Сохранить');
+  const cancel = el('button', 'btn small ghost', 'Отмена');
+  cancel.onclick = renderProfile;
+  save.onclick = async () => {
+    save.disabled = true;
+    err.textContent = '';
+    try {
+      const newName = uname.value.trim().replace(/^@/, '');
+      if (newName !== u.username) {
+        const nu = await api('/api/me/username', { method: 'POST', body: { username: newName } });
+        u.username = nu.username; S.me.username = nu.username;
+        history.replaceState(null, '', '#/u/' + encodeURIComponent(nu.username));
+      }
+      const r = await api('/api/me', { method: 'POST', body: { name: name.value.trim(), bio: bio.value.trim(), phone: phone.value.trim(), birthday: bday.value } });
+      u.name = r.name; u.bio = r.bio || '';
+      u.phone = phone.value.trim(); u.birthday = bday.value;
+      S.me.name = r.name; S.me.bio = r.bio;
+      renderMe();
+      renderProfile();
+    } catch (e) { err.textContent = e.message; save.disabled = false; }
+  };
+  const row = el('div', 'prof-btns');
+  row.style.justifyContent = 'flex-start';
+  row.append(save, cancel);
+  form.append(el('div', 'prof-name', L('Редактирование', 'Editing')),
+    avatarEditor({ id: u.id, name: u.name, avatar: u.avatar }, false, '/api/me/avatar', url => {
+      u.avatar = url; S.me.avatar = url;
+      renderMe();
+      for (const p of S.posts.values()) if (p.author.id === S.me.id) p.author.avatar = url;
+    }),
+    el('div', 'field-label', 'Имя'), name,
+    el('div', 'field-label', 'Описание'), bio,
+    el('div', 'field-label', 'Номер телефона'), phone,
+    el('div', 'field-label', 'Дата рождения'), bday,
+    el('div', 'field-label', 'Юзернейм'), uname,
+    Object.assign(el('div', 'extra-names', 'Юзернейм — это и ваш логин для входа. Дополнительные юзернеймы для входа не подходят.'), { style: 'margin:-4px 0 10px' }));
+  if (u.my_usernames && u.my_usernames.length) form.append(el('div', 'field-label', 'Дополнительные юзернеймы'), usernameChips(u));
+  form.append(more, row, err);
+  box.append(form);
+  name.focus();
+}
+
+// ---------- уведомления ----------
+const NT = { filter: 'all', items: [], unread: 0, countLoaded: false };
+document.querySelectorAll('#notifTabs button').forEach(b => b.onclick = () => {
+  NT.filter = b.dataset.f;
+  document.querySelectorAll('#notifTabs button').forEach(x => x.classList.toggle('on', x === b));
+  loadNotifs();
+});
+async function loadNotifCount() {
+  try { const r = await api('/api/notifications?f=mentions'); NT.unread = r.unread; paintNotifDot(); } catch {}
+}
+function paintNotifDot() { $('notifDot').classList.toggle('hidden', !NT.unread); }
+async function showNotifications() {
+  setView('notifications', 'notifications');
+  await loadNotifs();
+  markNotifsSeen();
+}
+async function loadNotifs() {
+  const box = $('notifList');
+  if (!NT.items.length) box.replaceChildren(el('div', 'loader', 'Загрузка…'));
+  try {
+    const r = await api('/api/notifications?f=' + NT.filter);
+    NT.items = r.items;
+    NT.unread = r.unread;
+    renderNotifs();
+    paintNotifDot();
+  } catch (e) { box.replaceChildren(el('div', 'empty', e.message)); }
+}
+async function markNotifsSeen() {
+  if (!NT.unread) return;
+  try { await api('/api/notifications/read', { method: 'POST' }); } catch {}
+  NT.unread = 0;
+  paintNotifDot();
+}
+function notifRest(n) {
+  const t = n.text ? n.text.replace(/\s+/g, ' ') : '';
+  switch (n.kind) {
+    case 'like': return L('поставил лайк вашему посту', 'liked your post');
+    case 'comment': return L('комментирует: ', 'commented: ') + t;
+    case 'mention': return L('упомянул вас: ', 'mentioned you: ') + t;
+    case 'follow': return L('подписался на вас', 'followed you');
+    case 'friend_request': return L('хочет добавить вас в друзья', 'wants to be your friend');
+    case 'friend': return L('теперь ваш друг', 'is now your friend');
+    case 'repost': return L('сделал репост вашего поста', 'reposted your post');
+  }
+  return t;
+}
+function renderNotifs() {
+  const box = $('notifList');
+  box.replaceChildren();
+  if (!NT.items.length) { box.append(el('div', 'empty', 'Уведомлений пока нет')); return; }
+  for (const n of NT.items) {
+    const it = el('div', 'nrow' + (n.seen ? '' : ' unseen'));
+    const a = el('div', 'ava');
+    setAva(a, n.actor, false);
+    const t = el('div', 'ntext');
+    t.append(el('b', null, '@' + n.actor.username), ' ' + notifRest(n));
+    it.append(a, t);
+    if (n.kind === 'friend_request') {
+      const ok = el('button', 'btn small', 'Принять');
+      ok.onclick = async e => {
+        e.stopPropagation();
+        ok.disabled = true;
+        try { await api('/api/friends', { method: 'POST', body: { user_id: n.actor.id, on: true } }); ok.textContent = tr('Вы друзья'); }
+        catch (err) { alert(err.message); ok.disabled = false; }
+      };
+      it.append(ok);
+    }
+    it.onclick = () => n.post_id ? go('p/' + n.post_id) : go('u/' + encodeURIComponent(n.actor.username));
+    box.append(it);
+  }
+}
+function onNotif(n) {
+  if (S.view === 'notifications') {
+    if (NT.filter === 'all' || (NT.filter === 'comments' && n.kind === 'comment') || (NT.filter === 'mentions' && n.kind === 'mention')) {
+      n.seen = true;
+      NT.items.unshift(n);
+      renderNotifs();
+    }
+    api('/api/notifications/read', { method: 'POST' }).catch(() => {});
+    return;
+  }
+  NT.unread++;
+  paintNotifDot();
+}
+
+// ---------- поиск людей и сообществ ----------
+let gSearchTimer = 0;
+function showSearch() {
+  setView('search', '');
+  renderSearch();
+  setTimeout(() => $('gSearch').focus(), 60);
+}
+$('searchBack').onclick = () => navDepth > 0 ? history.back() : go('feed');
+$('gSearch').oninput = () => { clearTimeout(gSearchTimer); gSearchTimer = setTimeout(renderSearch, 250); };
+async function renderSearch() {
+  const q = $('gSearch').value.trim();
+  const box = $('gResults');
+  if (!q) { box.replaceChildren(el('div', 'empty', 'Найдите людей и сообщества')); return; }
+  try {
+    const [users, comms] = await Promise.all([
+      api('/api/users?q=' + encodeURIComponent(q)),
+      api('/api/communities/search?q=' + encodeURIComponent(q)).catch(() => []),
+    ]);
+    if ($('gSearch').value.trim() !== q) return;
+    box.replaceChildren();
+    if (users.length) {
+      box.append(el('div', 'sect-title', 'Люди'));
+      for (const u of users) {
+        const it = el('div', 'chat2');
+        const a = el('div', 'ava');
+        setAva(a, u, u.online);
+        const m = el('div', 'c2-main');
+        m.append(el('div', 'c2-name', u.name), el('div', 'c2-prev', '@' + u.username));
+        it.append(a, m);
+        it.onclick = () => go('u/' + encodeURIComponent(u.username));
+        box.append(it);
+      }
+    }
+    if (comms.length) {
+      box.append(el('div', 'sect-title', 'Сообщества'));
+      for (const c of comms) {
+        const it = el('div', 'chat2');
+        const a = el('div', 'ava sq');
+        setAva(a, { id: c.id, name: c.name, avatar: c.avatar }, false);
+        const m = el('div', 'c2-main');
+        const n = el('div', 'c2-name', c.name);
+        if (c.verified) n.append(' ', verifiedBadge());
+        m.append(n, el('div', 'c2-prev', '@' + c.slug));
+        it.append(a, m);
+        it.onclick = () => go('c/' + encodeURIComponent(c.slug));
+        box.append(it);
+      }
+    }
+    if (!users.length && !comms.length) box.append(el('div', 'empty', 'Ничего не нашли'));
+  } catch (e) { box.replaceChildren(el('div', 'empty', e.message)); }
+}
+
+// ---------- настройки: сообщества, верификация, панель, выход ----------
+$('setComms').onclick = () => { closeSettings(); openMyCommunities(); };
+$('setVerif').onclick = () => { closeSettings(); openVerify(); };
+$('setAdmin').onclick = () => { closeSettings(); go('admin'); };
+{
+  const out = el('button', 'set-row');
+  out.type = 'button';
+  out.style.color = 'var(--danger)';
+  out.innerHTML = ICON2.logout.replace('<svg', '<svg class="ic" style="color:var(--danger)"');
+  out.append(el('span', null, 'Выйти'));
+  out.onclick = () => { if (confirm('Выйти из аккаунта?')) logout(true); };
+  $('setMain').append(out);
+}
+async function openMyCommunities() {
+  $('pickTitle').textContent = tr('Мои сообщества');
+  $('pickModal').classList.remove('hidden');
+  const box = $('pickBody');
+  box.replaceChildren(el('div', 'loader', 'Загрузка…'));
+  try {
+    const list = await api('/api/communities?user=' + S.me.id);
+    box.replaceChildren();
+    const add = el('button', 'btn', 'Создать сообщество');
+    add.style.marginBottom = '10px';
+    add.onclick = () => { closePick(); openCommModal(); };
+    box.append(add);
+    if (!list.length) box.append(el('div', 'empty', 'У вас пока нет сообществ'));
+    for (const c of list) { const n = commNode(c); n.addEventListener('click', closePick); box.append(n); }
+  } catch (e) { box.replaceChildren(el('div', 'empty', e.message)); }
+}
+
+// ===================== ЧАТЫ =====================
+S.selected = new Set();
+S.privSummary = null;
+S.privMode = false;
+
+async function loadChats() {
+  try {
+    const list = await api('/api/chats');
+    // чаты сообщества (для команды) и открытые «Личные» не трогаем
+    const keep = [...S.chats.values()].filter(c => c.inbox || (S.privMode && c.private));
+    S.chats = new Map([...keep, ...list].map(c => [c.id, c]));
+    S.chatsLoaded = true;
+    renderList();
+    renderHead();
+    const want = chatFromHash();
+    if (S.view === 'messages' && want && S.current !== want && S.chats.has(want)) openChat(want);
+  } catch {}
+  loadPrivSummary();
+}
+
+async function loadPrivSummary() {
+  try { S.privSummary = await api('/api/chats/private/summary'); } catch { return; }
+  paintSideHead();
+  updateUnread();
+}
+
+function showMessages(chatId) {
+  setView('messages', 'messages');
+  if (S.inbox) { S.inbox = 0; closeChat(); }
+  paintSideHead();
+  if (chatId && S.chats.has(chatId)) { if (S.current !== chatId) openChat(chatId); }
+  else if (!chatId || S.chatsLoaded) closeChat();
+}
+
+function paintSideHead() {
+  const h = $('sideHead');
+  h.replaceChildren();
+  const btn = (icon, title, onClick) => { const b = el('button', 'vh-btn'); b.type = 'button'; b.title = title; b.innerHTML = icon; b.onclick = onClick; return b; };
+  const right = el('div', 'vh-right');
+  if (S.inbox || S.privMode) {
+    h.append(btn(ICON2.back, 'Назад', () => {
+      if (S.privMode) { lockPrivate(); return; }
+      navDepth > 0 ? history.back() : go('feed');
+    }));
+    const t = el('h1', null, S.inbox ? 'Чаты сообщества' : 'Личные');
+    h.append(t, right);
+  } else {
+    h.append(btn(ICON2.hex, 'Настройки', openSettings), el('h1', null, 'Чаты'));
+    right.append(btn(ICON.trash, 'Удалить чаты', toggleSelecting));
+    h.append(right);
+  }
+  $('search').parentElement.classList.toggle('hidden', !!S.inbox);
+  const ps = S.privSummary;
+  const showPriv = !S.inbox && !S.privMode && ps && ps.count > 0;
+  $('privCard').classList.toggle('hidden', !showPriv);
+  if (showPriv) $('privSub').textContent = ps.unread ? tr('У вас есть несколько сообщений') : tr('Чаты под кодом');
+}
+
+const isRequest = c => c.kind === 'direct' && !c.community && !c.inbox && !c.i_wrote && !c.i_follow && c.last && c.last.user_id !== S.me.id;
+
+function renderList() {
+  updateUnread();
+  if (searchMode) return;
+  const list = $('list');
+  list.replaceChildren();
+  const chats = [...S.chats.values()]
+    .filter(c => S.inbox ? c.inbox === S.inbox : (S.privMode ? c.private : !c.inbox && !c.private))
+    .sort((a, b) => chatTime(b) - chatTime(a));
+  if (!chats.length) {
+    list.append(el('div', 'empty', S.inbox ? 'Клиенты пока не писали сообществу'
+      : S.privMode ? 'В личных пока пусто — зажмите чат в общем списке и выберите «Сделать личным»'
+      : 'Чатов пока нет. Найдите собеседника через поиск сверху.'));
+  }
+  if (S.inbox || S.privMode) { for (const c of chats) list.append(chatItem(c)); }
+  else {
+    const pinned = chats.filter(c => c.pinned);
+    const reqs = chats.filter(c => !c.pinned && isRequest(c));
+    const rest = chats.filter(c => !c.pinned && !isRequest(c));
+    if (pinned.length) { const g = el('div', 'pin-group'); for (const c of pinned) g.append(chatItem(c)); list.append(g); }
+    for (const c of rest) list.append(chatItem(c));
+    if (reqs.length) { list.append(el('div', 'sect-title', 'Запросы')); for (const c of reqs) list.append(chatItem(c)); }
+  }
+  $('selBar').classList.toggle('hidden', !S.selecting);
+  $('selDelete').textContent = tr('Удалить') + (S.selected.size ? ` (${S.selected.size})` : '');
+}
+
+function lastPreview(c) {
+  const m = c.last;
+  if (!m) return '@' + c.peer.username;
+  if (m.media && !m.body) return { image: L('Фото', 'Photo'), video: L('Видео', 'Video'), audio: L('Голосовое сообщение', 'Voice message') }[m.media.kind] || L('Вложение', 'Attachment');
+  return m.body.replace(/\s+/g, ' ');
+}
+
+function chatItem(c) {
+  const it = el('div', 'chat2' + (c.id === S.current ? ' on' : '') + (S.selecting && S.selected.has(c.id) ? ' selected' : ''));
+  if (S.selecting) it.append(el('span', 'sel'));
+  const ava = el('div', 'ava' + (c.community && !c.inbox ? ' sq' : ''));
+  setAva(ava, c.peer, c.peer.online);
+  const main = el('div', 'c2-main');
+  main.append(el('div', 'c2-name', c.peer.name));
+  const typing = S.typing.has(c.id);
+  const prev = el('div', 'c2-prev' + (typing ? ' typing' : ''));
+  if (typing) prev.textContent = L('печатает…', 'typing…');
+  else {
+    if (c.last && S.me && isMine(c, c.last)) prev.append(el('b', null, L('Вы: ', 'You: ')));
+    prev.append(lastPreview(c));
+  }
+  main.append(prev);
+  const side = el('div', 'c2-side');
+  const top = el('div', 'c2-top');
+  if (c.pinned) { const s = el('span'); s.innerHTML = ICON2.pin; top.append(s); }
+  if (c.muted) { const s = el('span'); s.innerHTML = ICON2.bellOff; top.append(s); }
+  if (c.last) top.append(el('span', 'c2-time', listTime(c.last.created)));
+  side.append(top);
+  if (c.unread > 0) side.append(el('span', 'c2-badge' + (c.muted ? ' muted' : ''), c.unread > 99 ? '99+' : c.unread));
+  else if (c.last && S.me && isMine(c, c.last)) {
+    const read = c.last.id <= c.peer_read;
+    side.append(el('span', 'c2-ticks' + (read ? ' read' : ''), read ? '✓✓' : '✓'));
+  }
+  it.append(ava, main, side);
+
+  // нажатие — открыть; зажатие (телефон) или правый клик (ПК) — меню чата
+  let lpTimer = 0, lpFired = false;
+  it.addEventListener('touchstart', e => {
+    lpFired = false;
+    const t = e.touches[0];
+    lpTimer = setTimeout(() => { lpFired = true; if (navigator.vibrate) navigator.vibrate(15); chatMenu({ x: t.clientX, y: t.clientY }, c); }, 480);
+  }, { passive: true });
+  const cancelLp = () => clearTimeout(lpTimer);
+  it.addEventListener('touchmove', cancelLp, { passive: true });
+  it.addEventListener('touchend', cancelLp);
+  it.addEventListener('contextmenu', e => { e.preventDefault(); if (!lpFired) chatMenu({ x: e.clientX, y: e.clientY }, c); });
+  it.onclick = () => {
+    if (lpFired) { lpFired = false; return; }
+    if (S.selecting) { S.selected.has(c.id) ? S.selected.delete(c.id) : S.selected.add(c.id); renderList(); return; }
+    go(c.inbox ? `inbox/${c.inbox}/${c.id}` : 'messages/' + c.id);
+  };
+  return it;
+}
+
+function updateUnread() {
+  let n = 0;
+  for (const c of S.chats.values()) if (!c.inbox && !c.private && !c.muted) n += c.unread || 0;
+  if (!S.privMode && S.privSummary) n += S.privSummary.unread || 0;
+  document.title = n ? `(${n}) divy` : 'divy';
+  $('navBadge').textContent = n > 99 ? '99+' : n;
+  $('navBadge').classList.toggle('hidden', !n);
+}
+
+// меню чата: закрепить, уведомления, личные, очистить, заблокировать, удалить
+function chatMenu(point, c) {
+  const direct = c.kind === 'direct' && !c.community;
+  popMenu(point, [
+    { icon: ICON2.pin, text: c.pinned ? tr('Открепить') : tr('Закрепить'), onClick: () => chatPref(c, { pinned: !c.pinned }) },
+    { icon: c.muted ? ICON2.bell : ICON2.bellOff, text: c.muted ? tr('Включить уведомления') : tr('Выключить уведомления'), onClick: () => chatPref(c, { muted: !c.muted }) },
+    !c.inbox && { icon: c.private ? ICON2.unlock : ICON2.lock, text: c.private ? tr('Убрать из личных') : tr('Сделать личным'), onClick: () => setChatPrivate(c, !c.private) },
+    { icon: ICON2.broom, text: tr('Очистить историю'), onClick: () => clearChatHistory(c) },
+    direct && { icon: ICON2.ban, text: tr('Заблокировать'), danger: true, onClick: () => blockFromChat(c) },
+    !c.inbox && { icon: ICON.trash, text: tr('Удалить чат'), danger: true, onClick: () => deleteChats([c.id], true) },
+  ]);
+}
+
+async function chatPref(c, patch) {
+  try {
+    await api('/api/chats/prefs', { method: 'POST', body: Object.assign({ chat_id: c.id }, patch) });
+    Object.assign(c, patch);
+    renderList();
+  } catch (e) { alert(e.message); }
+}
+
+async function clearChatHistory(c) {
+  if (!confirm(L(`Очистить историю с ${c.peer.name}? Сообщения пропадут только у вас.`, `Clear the history with ${c.peer.name}? Messages will disappear only for you.`))) return;
+  try {
+    await api('/api/chats/clear', { method: 'POST', body: { chat_id: c.id } });
+    const box = S.msgs.get(c.id);
+    if (box) { box.list = []; box.more = false; }
+    c.last = null; c.unread = 0;
+    if (S.current === c.id) renderMsgs(true);
+    renderList();
+  } catch (e) { alert(e.message); }
+}
+
+async function blockFromChat(c) {
+  if (!confirm(L(`Заблокировать ${c.peer.name}? Он не сможет вам писать.`, `Block ${c.peer.name}? They won't be able to message you.`))) return;
+  try {
+    await api('/api/block', { method: 'POST', body: { user_id: c.peer.id, on: true } });
+    alert(L('Пользователь заблокирован', 'User blocked'));
+  } catch (e) { alert(e.message); }
+}
+
+async function deleteChats(ids, ask) {
+  if (!ids.length) return;
+  if (ask && !confirm(ids.length > 1 ? L(`Удалить чаты (${ids.length})? История пропадёт только у вас.`, `Delete ${ids.length} chats? History will disappear only for you.`)
+                                      : L('Удалить чат? История пропадёт только у вас.', 'Delete this chat? History will disappear only for you.'))) return;
+  for (const id of ids) {
+    try {
+      await api('/api/chats/delete', { method: 'POST', body: { chat_id: id } });
+      S.chats.delete(id);
+      S.msgs.delete(id);
+      if (S.current === id) go('messages');
+    } catch (e) { alert(e.message); break; }
+  }
+  S.selected.clear();
+  S.selecting = false;
+  renderList();
+}
+
+// корзина в шапке: режим выбора нескольких чатов для удаления
+function toggleSelecting() {
+  S.selecting = !S.selecting;
+  S.selected.clear();
+  renderList();
+}
+$('selCancel').onclick = toggleSelecting;
+$('selDelete').onclick = () => deleteChats([...S.selected], true);
+
+// поиск: сначала чаты, ниже — люди
+$('search').oninput = () => {
+  clearTimeout(searchTimer);
+  const q = $('search').value.trim().toLowerCase();
+  if (!q) { searchMode = false; renderList(); return; }
+  searchMode = true;
+  const list = $('list');
+  list.replaceChildren();
+  const found = [...S.chats.values()].filter(c => (S.inbox ? c.inbox === S.inbox : !c.inbox && (S.privMode ? c.private : !c.private))
+    && (c.peer.name.toLowerCase().includes(q) || c.peer.username.toLowerCase().includes(q)));
+  for (const c of found) list.append(chatItem(c));
+  const people = el('div');
+  list.append(people);
+  if (S.inbox) return;
+  searchTimer = setTimeout(async () => {
+    try {
+      const users = (await api('/api/users?q=' + encodeURIComponent(q))).filter(u => !found.some(c => !c.community && c.peer.id === u.id));
+      if ($('search').value.trim().toLowerCase() !== q) return;
+      if (users.length) {
+        people.append(el('div', 'sect-title', 'Люди'));
+        for (const u of users) {
+          const it = el('div', 'chat2');
+          const a = el('div', 'ava');
+          setAva(a, u, u.online);
+          const m = el('div', 'c2-main');
+          m.append(el('div', 'c2-name', u.name), el('div', 'c2-prev', '@' + u.username));
+          it.append(a, m);
+          it.onclick = () => startChat(u.id);
+          people.append(it);
+        }
+      } else if (!found.length) people.append(el('div', 'empty', 'Ничего не нашли'));
+    } catch {}
+  }, 250);
+};
+
+// ---------- «Личные» чаты под кодом ----------
+$('privCard').onclick = () => openPin('enter');
+async function unlockPrivate(pin) {
+  const list = await api('/api/chats/private', { method: 'POST', body: { pin } });
+  S.privMode = true;
+  for (const c of list) S.chats.set(c.id, c);
+  searchMode = false;
+  $('search').value = '';
+  paintSideHead();
+  renderList();
+}
+function lockPrivate() {
+  S.privMode = false;
+  for (const [id, c] of S.chats) if (c.private) { S.chats.delete(id); S.msgs.delete(id); }
+  if (S.current && !S.chats.has(S.current)) closeChat();
+  paintSideHead();
+  renderList();
+  loadPrivSummary();
+}
+async function setChatPrivate(c, on) {
+  const apply = async () => {
+    try {
+      await api('/api/chats/prefs', { method: 'POST', body: { chat_id: c.id, private: on } });
+      c.private = on;
+      if (on && !S.privMode) { S.chats.delete(c.id); if (S.current === c.id) go('messages'); }
+      if (!on && S.privMode) { /* остаётся в списке после выхода из «Личных» */ }
+      renderList();
+      loadPrivSummary();
+    } catch (e) { alert(e.message); }
+  };
+  if (on && !(S.privSummary && S.privSummary.pin_set)) { openPin('set', apply); return; }
+  apply();
+}
+
+// клавиатура для кода
+const PIN = { mode: 'enter', buf: '', first: '', then: null };
+function openPin(mode, then) {
+  PIN.mode = mode; PIN.buf = ''; PIN.first = ''; PIN.then = then || null;
+  $('pinTitle').textContent = tr(mode === 'set' ? 'Придумайте код:' : 'Введите код:');
+  $('pinErr').textContent = '';
+  paintPinDots();
+  $('pinOverlay').classList.remove('hidden');
+}
+function closePin() { $('pinOverlay').classList.add('hidden'); }
+function paintPinDots() { [...$('pinDots').children].forEach((d, i) => d.classList.toggle('on', i < PIN.buf.length)); }
+$('pinOverlay').addEventListener('click', e => { if (e.target === $('pinOverlay')) closePin(); });
+$('pinPad').onclick = e => {
+  const b = e.target.closest('button');
+  if (!b || PIN.buf.length >= 4) return;
+  PIN.buf += b.dataset.d;
+  paintPinDots();
+  if (PIN.buf.length === 4) setTimeout(pinDone, 120);
+};
+addEventListener('keydown', e => {
+  if ($('pinOverlay').classList.contains('hidden')) return;
+  if (/^[0-9]$/.test(e.key) && PIN.buf.length < 4) { PIN.buf += e.key; paintPinDots(); if (PIN.buf.length === 4) setTimeout(pinDone, 120); }
+  else if (e.key === 'Backspace') { PIN.buf = PIN.buf.slice(0, -1); paintPinDots(); }
+  else if (e.key === 'Escape') closePin();
+});
+async function pinDone() {
+  const pin = PIN.buf;
+  $('pinErr').textContent = '';
+  if (PIN.mode === 'set') {
+    if (!PIN.first) { PIN.first = pin; PIN.buf = ''; $('pinTitle').textContent = tr('Повторите код:'); paintPinDots(); return; }
+    if (pin !== PIN.first) {
+      PIN.first = ''; PIN.buf = '';
+      $('pinTitle').textContent = tr('Придумайте код:');
+      $('pinErr').textContent = tr('Коды не совпадают');
+      paintPinDots();
+      return;
+    }
+    try {
+      await api('/api/me/pin', { method: 'POST', body: { pin } });
+      if (S.privSummary) S.privSummary.pin_set = true;
+      closePin();
+      if (PIN.then) PIN.then();
+    } catch (e) { $('pinErr').textContent = e.message; PIN.buf = ''; PIN.first = ''; paintPinDots(); }
+    return;
+  }
+  try { await unlockPrivate(pin); closePin(); }
+  catch (e) { $('pinErr').textContent = e.message; PIN.buf = ''; paintPinDots(); }
+}
+
+// ---------- открытый чат ----------
+function renderHead() {
+  const c = S.chats.get(S.current);
+  if (!c) return;
+  setAva($('peerAva'), c.peer, false);
+  $('peerAva').classList.toggle('sq', !!(c.community && !c.inbox));
+  $('peerName').textContent = c.peer.name;
+  const st = $('peerStatus');
+  if (S.typing.has(c.id)) { st.textContent = L('печатает…', 'typing…'); st.className = 'status typing'; }
+  else if (c.community && !c.inbox) { st.textContent = L('сообщество', 'community'); st.className = 'status'; }
+  else { st.textContent = lastSeenText(c.peer); st.className = 'status' + (c.peer.online ? ' online' : ''); }
+  // на «назад» — сколько непрочитанных в остальных чатах
+  let n = 0;
+  for (const x of S.chats.values()) if (x.id !== c.id && !x.inbox && !x.muted) n += x.unread || 0;
+  $('backBadge').textContent = n > 99 ? '99+' : n;
+  $('backBadge').classList.toggle('hidden', !n);
+  paintSendBtn();
+}
+
+function msgMedia(m) {
+  const md = m.media;
+  if (md.kind === 'audio') return voicePlayer(m);
+  if (md.kind === 'video') {
+    if (md.processing) { const ph = el('div', 'car-proc', 'Видео обрабатывается…'); ph.dataset.media = md.id; ph.style.height = '160px'; ph.style.width = '220px'; return ph; }
+    return videoEl(md);
+  }
+  const img = document.createElement('img');
+  img.src = md.localUrl || SERVER + md.url;
+  img.alt = '';
+  img.loading = 'lazy';
+  if (!md.localUrl) img.onclick = () => window.open(SERVER + md.url, '_blank');
+  return img;
+}
+
+function voicePlayer(m) {
+  const md = m.media;
+  const box = el('div', 'voice');
+  const btn = el('button');
+  btn.type = 'button';
+  btn.innerHTML = ICON2.play;
+  const bar = el('div', 'vbar');
+  const fill = el('i');
+  bar.append(fill);
+  const t = el('span', 'vtime', fmtDur(md.dur || 0));
+  let a = null;
+  btn.onclick = e => {
+    e.stopPropagation();
+    if (!a) {
+      a = new Audio(md.localUrl || SERVER + md.url);
+      a.ontimeupdate = () => { fill.style.width = Math.min(100, a.currentTime / ((isFinite(a.duration) && a.duration) || md.dur || 1) * 100) + '%'; t.textContent = fmtDur(a.currentTime); };
+      a.onpause = () => { btn.innerHTML = ICON2.play; };
+      a.onplay = () => { btn.innerHTML = ICON2.pause; };
+      a.onended = () => { fill.style.width = '0'; t.textContent = fmtDur(md.dur || 0); };
+    }
+    if (a.paused) { if (S.audio && S.audio !== a) S.audio.pause(); S.audio = a; a.play().catch(() => {}); }
+    else a.pause();
+  };
+  box.append(btn, bar, t);
+  return box;
+}
+
+function renderMsgs(forceBottom = false, keepPosition = false) {
+  const c = S.chats.get(S.current);
+  if (!c) return;
+  const box = S.msgs.get(c.id) || { list: [] };
+  const wrap = $('msgs');
+  const nearBottom = wrap.scrollHeight - wrap.scrollTop - wrap.clientHeight < 80;
+  const fromBottom = wrap.scrollHeight - wrap.scrollTop;
+  const all = [...box.list, ...pendingFor(c.id)];
+  wrap.replaceChildren();
+  if (box.loaded && !all.length) wrap.append(el('div', 'empty', 'Сообщений пока нет. Напишите первым 👋'));
+  let lastDay = '';
+  for (const m of all) {
+    const day = new Date(m.created).toDateString();
+    if (day !== lastDay) {
+      wrap.append(el('div', 'day', sameDay(m.created, Date.now()) ? dayLabel(m.created) : new Date(m.created).toLocaleDateString(LOCALE, { day: 'numeric', month: 'long' })));
+      lastDay = day;
+    }
+    const mine = isMine(c, m);
+    const row = el('div', 'mrow' + (mine ? ' mine' : '') + (m.pending ? ' pending' : ''));
+    const bub = el('div', 'bub' + (m.media ? ' media' : ''));
+    if (m.media) {
+      bub.append(msgMedia(m));
+      if (m.body) { const cap = el('div', 'cap'); linkify(cap, m.body); bub.append(cap); }
+    } else linkify(bub, m.body);
+    const time = el('span', 'mtime' + (m.failed ? ' fail' : ''), m.failed ? '⚠' : m.pending ? (m.uploading ? '⏳' : '🕓') : hm(m.created));
+    if (m.failed) { time.title = tr('Не отправлено — нажмите, чтобы повторить'); time.onclick = () => dispatchPending(m); }
+    if (mine) row.append(time, bub); else row.append(bub, time);
+    wrap.append(row);
+  }
+  if (keepPosition) wrap.scrollTop = wrap.scrollHeight - fromBottom;
+  else if (forceBottom || nearBottom) wrap.scrollTop = wrap.scrollHeight;
+}
+
+function dispatchPending(p) {
+  if (p.uploading) return;
+  p.failed = false;
+  clearTimeout(p.timer);
+  if (p.media && !p.media.id) { p.failed = true; if (S.current === p.chat_id) renderMsgs(); return; }
+  wsSend({ t: 'send', c: p.chat_id, body: p.body, cid: p.cid, media: p.media ? p.media.id : '' });
+  p.timer = setTimeout(() => {
+    if (!S.pending.has(p.cid)) return;
+    p.failed = true;
+    if (S.current === p.chat_id) renderMsgs();
+  }, SEND_TIMEOUT);
+  if (S.current === p.chat_id) renderMsgs();
+}
+
+// уведомление браузера о сообщении (кроме чатов «без звука»)
+function notify(c, m) {
+  if (c.muted || !('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    const text = m.body || lastPreview({ last: m, peer: c.peer });
+    const n = new Notification(c.peer.name, { body: text.slice(0, 120), tag: 'dio-' + c.id });
+    n.onclick = () => { window.focus(); go('messages/' + c.id); n.close(); };
+  } catch {}
+}
+
+// ---------- поле ввода: эмодзи, вложение, голосовое ----------
+function paintSendBtn() {
+  const hasText = !!$('input').value.trim();
+  const b = $('send');
+  b.classList.toggle('mic', !hasText);
+  b.title = hasText ? tr('Отправить') : tr('Голосовое сообщение');
+  b.innerHTML = hasText ? ICON2.up : ICON2.mic;
+}
+$('send').type = 'button';
+$('send').onclick = e => { e.preventDefault(); if ($('input').value.trim()) sendMsg(); else startRec(); };
+$('input').addEventListener('input', paintSendBtn);
+function sendMsg() {
+  const body = $('input').value.trim();
+  if (!body || !S.current) return;
+  const p = { cid: newCid(), chat_id: S.current, user_id: S.me.id, body, created: Date.now(), pending: true };
+  S.pending.set(p.cid, p);
+  $('input').value = '';
+  autosize($('input'), 140);
+  S.lastTypingSent = 0;
+  $('emojiPanel').classList.add('hidden');
+  dispatchPending(p);
+  renderMsgs(true);
+  paintSendBtn();
+  if (DEVICE === 'phone') $('input').focus();
+}
+
+const EMOJIS = '😀 😂 🤣 😊 😍 🥰 😘 😎 🤔 😅 😭 😡 🥺 😴 🤯 🥳 👍 👎 👏 🙏 💪 🤝 👋 🔥 ❤️ 💔 💯 ✨ 🎉 🎁 😇 🤗 😏 😬 🙄 😱 🤩 😋 😜 🤪 👀 💬 ☕ 🍕 ⚽ 🚀 🌙 ⭐'.split(' ');
+$('emojiBtn').onclick = () => {
+  const p = $('emojiPanel');
+  if (!p.children.length) for (const em of EMOJIS) {
+    const b = el('button', null, em);
+    b.type = 'button';
+    b.onclick = () => {
+      const i = $('input'), st = i.selectionStart ?? i.value.length;
+      i.value = i.value.slice(0, st) + em + i.value.slice(i.selectionEnd ?? st);
+      i.focus();
+      i.selectionStart = i.selectionEnd = st + em.length;
+      autosize(i, 140);
+      paintSendBtn();
+    };
+    p.append(b);
+  }
+  p.classList.toggle('hidden');
+};
+
+async function uploadForm(path, file, fields = {}) {
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(fields)) fd.append(k, v);
+  fd.append('file', file, file.name || 'file');
+  const res = await fetch(SERVER + path, { method: 'POST', headers: { Authorization: 'Bearer ' + S.token }, body: fd });
+  const d = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(d.error || (res.status === 413 ? 'Файл слишком большой' : 'Ошибка ' + res.status));
+  return d;
+}
+
+function sendAttachment(file, kind, path, fields = {}, extra = {}) {
+  const chat = S.current;
+  if (!chat) return;
+  const localUrl = URL.createObjectURL(file);
+  const p = { cid: newCid(), chat_id: chat, user_id: S.me.id, body: '', created: Date.now(), pending: true, uploading: true,
+    media: Object.assign({ kind, localUrl }, extra) };
+  S.pending.set(p.cid, p);
+  renderMsgs(true);
+  uploadForm(path, file, fields).then(media => {
+    p.media = Object.assign(media, { localUrl });
+    p.uploading = false;
+    dispatchPending(p);
+  }).catch(e => {
+    p.uploading = false;
+    p.failed = true;
+    if (S.current === chat) renderMsgs();
+    alert(e.message);
+  });
+}
+
+$('clipBtn').onclick = () => $('clipInput').click();
+$('clipInput').onchange = async () => {
+  const f = $('clipInput').files[0];
+  $('clipInput').value = '';
+  if (!f) return;
+  const kind = f.type.startsWith('video/') ? 'video' : f.type.startsWith('image/') ? 'image' : '';
+  if (!kind) { alert(L('Можно отправить фото или видео', 'You can send a photo or video')); return; }
+  if (kind === 'image' && f.size > IMAGE_MAX_BYTES) { alert(L('Фото больше 15 МБ', 'Photo is larger than 15 MB')); return; }
+  if (kind === 'video' && f.size > VIDEO_MAX_BYTES) { alert(L('Видео больше 100 МБ', 'Video is larger than 100 MB')); return; }
+  if (kind === 'video') {
+    const url = URL.createObjectURL(f);
+    const d = await videoDuration(url);
+    URL.revokeObjectURL(url);
+    if (d > VIDEO_MAX_SECS + 0.5) { alert(L('Видео длиннее 1 минуты', 'Video is longer than 1 minute')); return; }
+  }
+  sendAttachment(f, kind, '/api/upload');
+};
+
+// голосовое: нажали микрофон — идёт запись; «Отправить» или «Отмена»
+const REC = { rec: null, stream: null, chunks: [], start: 0, timer: 0, cancelled: false };
+async function startRec() {
+  if (!S.current) return;
+  if (!navigator.mediaDevices || !window.MediaRecorder) { alert(L('Запись голоса не поддерживается в этом браузере', 'Voice recording is not supported in this browser')); return; }
+  try { REC.stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+  catch { alert(L('Нет доступа к микрофону', 'No access to the microphone')); return; }
+  const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4']
+    .find(t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || '';
+  REC.rec = new MediaRecorder(REC.stream, mime ? { mimeType: mime } : undefined);
+  REC.chunks = [];
+  REC.cancelled = false;
+  REC.start = Date.now();
+  REC.rec.ondataavailable = e => { if (e.data && e.data.size) REC.chunks.push(e.data); };
+  REC.rec.onstop = () => {
+    REC.stream.getTracks().forEach(t => t.stop());
+    clearInterval(REC.timer);
+    $('recBar').classList.add('hidden');
+    $('composer').querySelector('.comp-bar').classList.remove('hidden');
+    if (REC.cancelled) return;
+    const dur = Math.round((Date.now() - REC.start) / 1000);
+    if (dur < 1) return;
+    const type = REC.rec.mimeType || 'audio/webm';
+    const ext = type.includes('mp4') ? 'm4a' : type.includes('ogg') ? 'ogg' : 'webm';
+    const file = new File(REC.chunks, 'voice.' + ext, { type });
+    sendAttachment(file, 'audio', '/api/upload/voice', { dur: String(dur) }, { dur });
+  };
+  REC.rec.start();
+  $('composer').querySelector('.comp-bar').classList.add('hidden');
+  $('recBar').classList.remove('hidden');
+  $('recTime').textContent = '0:00';
+  REC.timer = setInterval(() => {
+    const sec = (Date.now() - REC.start) / 1000;
+    $('recTime').textContent = fmtDur(sec);
+    if (sec >= 300) $('recSend').click(); // не больше 5 минут
+  }, 250);
+}
+$('recCancel').onclick = () => { REC.cancelled = true; if (REC.rec && REC.rec.state !== 'inactive') REC.rec.stop(); };
+$('recSend').onclick = () => { if (REC.rec && REC.rec.state !== 'inactive') REC.rec.stop(); };
+
+function removePost(id) {
+  const p = S.posts.get(id);
+  S.posts.delete(id);
+  for (const l of [FEED, PROF, COMM, REP, PRIV, SAVED, LIKED]) {
+    const i = l.ids.indexOf(id);
+    if (i >= 0) { l.ids.splice(i, 1); updateLoader(l); }
+  }
+  document.querySelectorAll(`[data-post="${id}"]`).forEach(n => n.remove());
+  if (p && p.community && S.comm && S.comm.id === p.community.id && S.comm.posts > 0) { S.comm.posts--; renderCommunity(); }
+}
+
+$('navLogo').onclick = () => go('feed');
 
 // ================= Старт =================
 if (S.token) start();
